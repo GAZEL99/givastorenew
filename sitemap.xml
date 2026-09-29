@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://www.givastore.biz.id/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.givastore.biz.id/cara-order.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.givastore.biz.id/kontak.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.givastore.biz.id/testimoni.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.givastore.biz.id/lacak-pesanan.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- 22 halaman produk -->
+  <url><loc>https://www.givastore.biz.id/product/netflix/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/disneyplus/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/youtube/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/amazon-prime/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/iqiyi/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/dramabox/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/loklok/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/viu/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/wetv/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/bstation/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/youkou/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/crunchyroll/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/canva/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/capcut/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/meitu/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/picsart/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/alight-motion/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/chatgpt/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/duolingo/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/spotify/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/wink/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://www.givastore.biz.id/product/applemusic/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+</urlset>

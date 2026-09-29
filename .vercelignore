@@ -1,0 +1,9 @@
+# Folder produk statis lama (duplikat per-produk) - di Vercel diganti oleh
+# /api/product-page.js supaya SEO server-side tetap jalan. Untuk hosting VPS
+# biasa (node server.js), folder-folder ini TETAP dipakai - jangan hapus dari git,
+# ini cuma dikecualikan khusus saat deploy ke Vercel.
+product/*/
+!product/pay/
+
+# Leftover file duplikat, tidak dipakai
+product/server.js

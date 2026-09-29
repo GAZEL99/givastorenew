@@ -102,3 +102,11 @@ git commit -m "fix wa dobel + fix data email hilang"
 git branch -M main
 git remote add origin https://github.com/GAZEL99/givastorenew.git
 git push -f origin main
+git init
+git add .
+git commit -m "fix wa dobel + fix data email hilang"
+git branch -M main
+git remote add origin https://github.com/GAZEL99/givastorenew.git
+git push -f origin main
+cd givastorenew
+pwd
