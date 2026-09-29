@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pembayaran QRIS &middot; GivaStore</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0c0d0e">
+<link rel="icon" href="image/logo.jpg" type="image/jpeg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800;12..96,900&family=Public+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --font-display: 'Bricolage Grotesque', var(--font-body);
+    --font-body: 'Public Sans', Arial, 'Helvetica Neue', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --bg: #0c0d0e; --surface: #141518; --surface-2: #1b1d22;
+    --border: #23252b; --border-strong: #383c46;
+    --text: #f5f6f8; --muted: #9aa1b5; --faint: #7a8299;
+    --radius: 10px; --radius-lg: 14px;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 0.95rem; line-height: 1.6;
+    min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; transition: opacity 0.2s ease-out;
+  }
+  body.page-leaving { opacity: 0; }
+  ::selection { background: var(--text); color: var(--bg); }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; border-radius: 6px; }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
+  .container { max-width: 640px; margin: 0 auto; padding: 0 20px; }
+  .mono { font-family: var(--font-mono); }
+  a { color: inherit; text-decoration: none; }
+
+  .topbar { border-bottom: 1px solid var(--border); }
+  .topbar-inner { max-width: 1100px; margin: 0 auto; padding: 7px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+  .topbar-status { display: inline-flex; align-items: center; gap: 8px; }
+  .topbar-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text); animation: ping 1.6s ease-out infinite; }
+  @keyframes ping { to { transform: scale(2.4); opacity: 0; } }
+  @media (max-width: 620px) { .topbar-inner > span:first-child { display: none; } .topbar-inner { justify-content: center; } }
+
+  .navbar { position: sticky; top: 0; z-index: 1000; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 20px; height: 62px; display: flex; align-items: center; gap: 22px; }
+  .nav-brand { display: flex; align-items: center; gap: 10px; color: var(--text); flex-shrink: 0; }
+  .nav-brand img { width: 30px; height: 30px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-strong); }
+  .nav-brand .name { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em; }
+  .nav-brand .name em { font-style: normal; color: var(--muted); font-weight: 600; }
+  .nav-status { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px; }
+  .nav-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text); animation: ping 1.6s ease-out infinite; }
+  @media (max-width: 480px) { .nav-status span.txt { display: none; } }
+
+  .btn {
+    font-family: var(--font-body); font-size: 0.86rem; font-weight: 700; background: var(--text); color: var(--bg);
+    border: none; cursor: pointer; padding: 13px 20px; border-radius: 9px; display: flex; align-items: center;
+    justify-content: center; gap: 8px; text-decoration: none; width: 100%;
+    transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  }
+  .btn:hover { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); padding: 12px 19px; }
+  .btn:active { transform: scale(0.98); }
+  .btn-ghost {
+    font-size: 0.85rem; font-weight: 600; background: transparent; color: var(--text);
+    border: 1px solid var(--border-strong); border-radius: 9px; cursor: pointer; padding: 12px 18px;
+    display: flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; width: 100%;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .btn-ghost:hover { background: var(--surface); border-color: var(--muted); }
+
+  .main-wrap { padding: 36px 0 60px; }
+  .hero-kicker { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); margin: 0 0 10px; }
+  .pay-hero h1 { font-size: clamp(1.35rem, 3.6vw, 1.7rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 26px; }
+  .pay-hero h1 .dim { color: var(--muted); }
+
+  .panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); padding: 20px; margin-bottom: 16px; }
+  .panel-head { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .panel-head .no { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; color: var(--faint); border: 1px solid var(--border-strong); border-radius: 6px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .panel-head h2 { font-size: 0.92rem; font-weight: 700; letter-spacing: -0.01em; }
+
+  .order-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; color: var(--muted); }
+  .order-row span:last-child { color: var(--text); font-weight: 600; }
+  .order-row.total { border-top: 1px dashed var(--border-strong); margin-top: 8px; padding-top: 14px; align-items: baseline; }
+  .order-row.total span:first-child { font-weight: 700; color: var(--text); font-size: 0.85rem; }
+  .order-row.total span:last-child { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; }
+  .process-note { display: flex; align-items: center; gap: 8px; border: 1px dashed var(--border-strong); border-radius: 8px; padding: 10px 12px; font-size: 0.74rem; color: var(--muted); margin-top: 14px; }
+  .process-note i { color: var(--text); }
+
+  #stateLoading, #stateQr, #stateSuccess, #stateExpired, #stateError { display: none; }
+  .active-state { display: block !important; }
+
+  .loader { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 6px 0; }
+  @keyframes shimmerBg { 0% { background-position: -300px 0; } 100% { background-position: 300px 0; } }
+  .sk { background: linear-gradient(90deg, var(--surface) 0px, var(--surface-2) 40px, var(--surface) 80px); background-size: 300px 100%; animation: shimmerBg 1.3s infinite linear; border-radius: 10px; }
+  .sk-qr { width: 200px; height: 200px; }
+  .loader p { color: var(--muted); font-size: 0.86rem; display: flex; align-items: center; gap: 8px; }
+  .spin { width: 15px; height: 15px; border: 2px solid var(--border-strong); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .amount-big { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; }
+  .qr-box { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+  .qr-box img { width: 208px; height: 208px; display: block; border-radius: 3px; }
+  .timer { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; border: 1px solid var(--border-strong); border-radius: 999px; padding: 7px 16px; color: var(--text); }
+  .timer.urgent { border-color: var(--text); animation: pulseBorder 1.1s ease-in-out infinite; }
+  @keyframes pulseBorder { 50% { border-color: var(--faint); } }
+  .polling-hint { display: flex; align-items: center; gap: 8px; color: var(--faint); font-size: 0.76rem; }
+  .poll-dots { display: flex; gap: 4px; }
+  .poll-dots span { width: 5px; height: 5px; background: var(--text); border-radius: 50%; animation: dotPulse 1s ease-in-out infinite; }
+  .poll-dots span:nth-child(2) { animation-delay: 0.15s; } .poll-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes dotPulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+  .save-btn { margin-top: 2px; width: 100%; padding: 11px; border-radius: 9px; border: 1px solid var(--border-strong); background: transparent; color: var(--text); font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: background-color 0.15s ease; }
+  .save-btn:hover { background: var(--surface-2); }
+  .save-btn:active { transform: scale(0.98); }
+
+  .order-id-box { text-align: center; border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 14px; margin-bottom: 16px; }
+  .order-id-box .lbl { font-family: var(--font-mono); font-size: 0.66rem; color: var(--faint); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+  .order-id-copy-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 6px 0; }
+  .order-id-box strong { font-family: var(--font-mono); font-size: 1.25rem; letter-spacing: 0.06em; }
+  .order-id-box p { font-size: 0.72rem; color: var(--faint); }
+  .copy-id-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-strong); background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; transition: transform 0.25s var(--ease), background-color 0.2s ease, color 0.2s ease; }
+  .copy-id-btn:hover { background: var(--surface-2); color: var(--text); }
+  .copy-id-btn:active { transform: scale(0.85); }
+  .copy-id-btn.copied { background: var(--text); color: var(--bg); border-color: var(--text); transform: scale(1.15); }
+
+  .result-icon-wrap { position: relative; width: 66px; height: 66px; margin: 6px auto 18px; }
+  .result-icon { width: 66px; height: 66px; border-radius: 50%; border: 1px solid var(--border-strong); background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; animation: bounceIn 0.5s var(--ease) both; }
+  @keyframes bounceIn { 0% { transform: scale(0.4); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+  .confetti-piece { position: absolute; top: -10px; width: 6px; height: 11px; opacity: 0.9; animation: confettiFall 1.6s ease-in forwards; }
+  @keyframes confettiFall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(320px) rotate(600deg); opacity: 0; } }
+  .result-title { text-align: center; font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; }
+  .result-desc { text-align: center; color: var(--muted); font-size: 0.86rem; margin-bottom: 22px; line-height: 1.6; }
+
+  .actions { display: flex; flex-direction: column; gap: 10px; }
+  .footer-note { text-align: center; color: var(--faint); font-size: 0.72rem; margin-top: 22px; line-height: 1.7; }
+  .footer-note i { color: var(--muted); }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner mono">
+      <span>Toko Digital Resmi &middot; Indonesia</span>
+      <span class="topbar-status"><span class="dot"></span>Transaksi Aman &amp; Terenkripsi</span>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">
+        <img src="image/logo.jpg" alt="Logo GivaStore" onerror="this.onerror=null;this.src='https://placehold.co/60/141518/f5f6f8?text=GS';">
+        <span class="name">Giva<em>Store</em></span>
+      </a>
+      <div class="nav-status"><span class="dot"></span><span class="txt">Real-time</span></div>
+    </div>
+  </nav>
+
+  <div class="container main-wrap">
+    <div class="pay-hero">
+      <p class="hero-kicker">Status Pembayaran</p>
+      <h1 id="heroTitle">Selesaikan <span class="dim">pembayaran</span> kamu</h1>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="no">01</span><h2>Ringkasan Pesanan</h2></div>
+      <div id="orderSummary"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="no">02</span><h2 id="headerTitle">Menyiapkan QRIS</h2></div>
+
+      <div id="stateLoading">
+        <div class="loader">
+          <div class="sk sk-qr"></div>
+          <p><span class="spin"></span> Membuat kode QRIS...</p>
+        </div>
+      </div>
+
+      <div id="stateQr">
+        <div class="qr-wrap">
+          <div class="amount-big" id="qrAmount">Rp0</div>
+          <div class="qr-box"><img id="qrImage" src="" alt="QRIS Code"></div>
+          <div class="timer" id="timerChip"><i class="fas fa-clock"></i> <span id="countdown">15:00</span></div>
+          <div class="polling-hint"><span class="poll-dots"><span></span><span></span><span></span></span> Mengecek status pembayaran otomatis...</div>
+          <button class="save-btn" id="btnSaveQr"><i class="fas fa-download"></i> Simpan Gambar QR</button>
+        </div>
+      </div>
+
+      <div id="stateSuccess">
+        <div class="result-icon-wrap" id="confettiHost"><div class="result-icon"><i class="fas fa-check"></i></div></div>
+        <div class="result-title">Pembayaran Berhasil!</div>
+        <div class="result-desc">Terima kasih! Pesanan kamu sedang diproses. Klik tombol di bawah untuk konfirmasi ke Admin CS via WhatsApp supaya akun segera dikirim.</div>
+
+        <div class="order-id-box">
+          <span class="lbl">ID Pesanan Kamu</span>
+          <div class="order-id-copy-row">
+            <strong id="orderIdDisplay">-</strong>
+            <button type="button" id="btnCopyOrderId" class="copy-id-btn" title="Salin ID"><i class="fas fa-copy"></i></button>
+          </div>
+          <p>Simpan ID ini untuk cek status pesanan kapan saja</p>
+        </div>
+
+        <div class="process-note"><i class="fas fa-circle-info"></i> Proses maksimal 1x24 jam setelah konfirmasi diterima admin.</div>
+        <div class="actions" style="margin-top:16px;">
+          <a href="#" id="btnWaConfirm" class="btn" target="_blank"><i class="fab fa-whatsapp"></i> Konfirmasi ke Admin</a>
+          <a href="lacak-pesanan.html" class="btn-ghost"><i class="fas fa-magnifying-glass"></i> Lacak Status Pesanan</a>
+          <a href="index.html" class="btn-ghost"><i class="fas fa-store"></i> Kembali Belanja</a>
+        </div>
+      </div>
+
+      <div id="stateExpired">
+        <div class="result-icon-wrap"><div class="result-icon"><i class="fas fa-hourglass-end"></i></div></div>
+        <div class="result-title">QRIS Kedaluwarsa</div>
+        <div class="result-desc">Waktu pembayaran sudah habis. Silakan buat pesanan baru untuk mendapatkan kode QRIS terbaru.</div>
+        <div class="actions">
+          <a href="javascript:history.back()" class="btn"><i class="fas fa-rotate-left"></i> Buat Pesanan Ulang</a>
+          <a href="index.html" class="btn-ghost"><i class="fas fa-store"></i> Kembali ke Beranda</a>
+        </div>
+      </div>
+
+      <div id="stateError">
+        <div class="result-icon-wrap"><div class="result-icon"><i class="fas fa-triangle-exclamation"></i></div></div>
+        <div class="result-title">Terjadi Kesalahan</div>
+        <div class="result-desc" id="errorDesc">Gagal membuat QRIS. Silakan coba lagi atau hubungi Admin CS.</div>
+        <div class="actions">
+          <a href="javascript:location.reload()" class="btn"><i class="fas fa-rotate-right"></i> Coba Lagi</a>
+          <a href="https://wa.me/6285181869816" class="btn-ghost" target="_blank"><i class="fab fa-whatsapp"></i> Hubungi Admin</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="footer-note"><i class="fas fa-shield-halved"></i> Pembayaran diproses aman melalui QRIS resmi.<br>&copy; <span id="currentYear"></span> GivaStore App Prems.</p>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  var supabaseClient = null;
+  try { supabaseClient = window.supabase.createClient('https://rblktttasrxemtkhknvt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJibGt0dHRhc3J4ZW10a2hrbnZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NDQ5MzMsImV4cCI6MjEwMTAyMDkzM30.l4mPqAlPhZk-Z73_sKNARc3qTxAfUsKZyNl9u6N90Lw'); } catch(e) {}
+
+  var SUPABASE_URL = 'https://rblktttasrxemtkhknvt.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJibGt0dHRhc3J4ZW10a2hrbnZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NDQ5MzMsImV4cCI6MjEwMTAyMDkzM30.l4mPqAlPhZk-Z73_sKNARc3qTxAfUsKZyNl9u6N90Lw';
+  var ADMIN_WA = '6285181869816';
+
+  document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('a[href]').forEach(function(a) {
+      var href = a.getAttribute('href');
+      if (!href || href.indexOf('javascript:') === 0 || href.indexOf('http') === 0 || href.indexOf('#') === 0 || a.target === '_blank') return;
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.add('page-leaving');
+        setTimeout(function() { window.location.href = href; }, 180);
+      });
+    });
+  });
+
+  function fmt(n) { return 'Rp' + Number(n || 0).toLocaleString('id-ID'); }
+
+  function fireConfetti() {
+    var host = document.getElementById('confettiHost');
+    if (!host) return;
+    var colors = ['#f5f6f8', '#9aa1b5', '#5e6475'];
+    for (var i = 0; i < 18; i++) {
+      var p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.left = (40 + Math.random() * 20 - 10) + '%';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.animationDelay = (Math.random() * 0.3) + 's';
+      p.style.animationDuration = (1.2 + Math.random() * 0.8) + 's';
+      p.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+      host.appendChild(p);
+      (function(el) { setTimeout(function() { el.remove(); }, 2200); })(p);
+    }
+  }
+
+  function showState(id) {
+    ['stateLoading','stateQr','stateSuccess','stateExpired','stateError'].forEach(function(s) {
+      document.getElementById(s).classList.remove('active-state');
+    });
+    document.getElementById(id).classList.add('active-state');
+
+    var hero = document.getElementById('heroTitle');
+    var headerTitle = document.getElementById('headerTitle');
+    if (id === 'stateSuccess') {
+      hero.innerHTML = 'Pembayaran <span class="dim">berhasil diterima</span>';
+      headerTitle.textContent = 'Sukses!';
+      fireConfetti();
+    } else if (id === 'stateExpired') {
+      hero.innerHTML = 'Waktu <span class="dim">pembayaran habis</span>';
+      headerTitle.textContent = 'QRIS Kedaluwarsa';
+    } else if (id === 'stateError') {
+      hero.innerHTML = 'Ada <span class="dim">kendala terjadi</span>';
+      headerTitle.textContent = 'Terjadi Kesalahan';
+    } else if (id === 'stateQr') {
+      hero.innerHTML = 'Selesaikan <span class="dim">pembayaran kamu</span>';
+      headerTitle.textContent = 'Scan QRIS';
+    } else {
+      hero.innerHTML = 'Selesaikan <span class="dim">pembayaran kamu</span>';
+      headerTitle.textContent = 'Menyiapkan QRIS';
+    }
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  var orderToken = params.get('o') || params.get('order') || '';
+  var orderRowId = null;
+  var order = { product: '', package: '-', price: 0, profile: '', wa: '', qty: 1, promo: '', discount: 0, total: 0 };
+
+  function loadOrderFromLegacyParams() {
+    order = {
+      product: params.get('product') || 'Produk', package: params.get('package') || '-',
+      price: parseInt(params.get('price')) || 0, profile: params.get('profile') || params.get('email') || '',
+      wa: params.get('wa') || '', qty: parseInt(params.get('qty')) || 1,
+      promo: params.get('promo') || '', discount: parseInt(params.get('discount')) || 0,
+      total: parseInt(params.get('total')) || 0
+    };
+    if (!order.total) order.total = Math.max(0, (order.price * order.qty) - order.discount);
+  }
+
+  async function loadOrderFromToken() {
+    try {
+      var res = await callFn('order-manage', { action: 'get', order_id: orderToken });
+      if (!res || !res.success || !res.data) return false;
+      var row = res.data;
+      orderRowId = row.id;
+      var acc = row.account_data || {};
+      order = {
+        product: row.product_name || 'Produk', package: row.package_name || '-', price: row.price || 0,
+        profile: acc.profile || '', wa: row.customer_whatsapp || '', qty: row.quantity || 1,
+        promo: acc.promo || '', discount: acc.discount || 0, total: row.total_amount || 0
+      };
+      if ((row.status || '').toLowerCase() === 'paid') {
+        currentTx = acc.klikqris_ref || acc.autogopay_tx || row.order_id || null;
+        showState('stateSuccess');
+        return true;
+      }
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; });
+  }
+
+  function renderSummary() {
+    var html = '';
+    html += '<div class="order-row"><span>Produk</span><span>' + escapeHtml(order.product) + '</span></div>';
+    html += '<div class="order-row"><span>Paket</span><span>' + escapeHtml(order.package) + '</span></div>';
+    html += '<div class="order-row"><span>Jumlah</span><span>' + order.qty + 'x</span></div>';
+    if (order.promo) html += '<div class="order-row"><span>Kode Promo</span><span>' + escapeHtml(order.promo) + ' (-' + fmt(order.discount) + ')</span></div>';
+    html += '<div class="order-row total"><span>Total Bayar</span><span>' + fmt(order.total) + '</span></div>';
+    html += '<div class="process-note"><i class="fas fa-circle-info"></i> Proses maksimal 1x24 jam setelah pembayaran diterima</div>';
+    document.getElementById('orderSummary').innerHTML = html;
+  }
+
+  var pollTimer = null, countdownTimer = null, currentTx = null, emailSent = false, waSent = false;
+
+  async function callFn(name, body) {
+    var res = await fetch(SUPABASE_URL + '/functions/v1/' + name, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  }
+
+  var STORAGE_KEY = 'givastore_pay_tx_' + btoa(unescape(encodeURIComponent(window.location.search)));
+  function saveTx(data) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+  function loadTx() { try { var raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+  function clearTx() { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+
+  async function createOrderRecord(transactionId) {
+    var acc = { profile: order.profile, promo: order.promo, discount: order.discount, klikqris_ref: transactionId };
+    try {
+      if (orderRowId) {
+        var res = await callFn('order-manage', { action: 'attach-payment', order_id: orderToken, account_data: acc });
+        if (!res || !res.success) console.error('GivaStore: gagal attach payment ->', res);
+      } else {
+        if (!supabaseClient) { console.error('GivaStore: supabaseClient belum siap'); return; }
+        // Penting: pakai transactionId yang SAMA dengan yang sudah dipakai bikin QRIS di KlikQRIS,
+        // bukan generate ID baru lagi -- kalau beda, status pembayaran nggak bakal nyambung ke order ini.
+        var res2 = await supabaseClient.from('orders').insert({
+          order_id: transactionId, product_name: order.product, package_name: order.package,
+          price: order.price || Math.round(order.total / (order.qty || 1)), quantity: order.qty,
+          total_amount: order.total, customer_whatsapp: order.wa || order.profile || '-',
+          account_data: acc, payment_method: 'QRIS', status: 'Pending'
+        });
+        if (res2.error) console.error('GivaStore: gagal simpan order ke DB ->', res2.error);
+      }
+    } catch (e) { console.error('GivaStore: exception saat simpan order ->', e); }
+  }
+
+  async function markOrderExpired(transactionId) {
+    try { await callFn('order-manage', { action: 'expire', order_id: orderToken || transactionId }); } catch (e) {}
+  }
+
+  function startCountdown(expiryTimeStr) {
+    var expiry = new Date(expiryTimeStr.replace(' ', 'T') + '+07:00').getTime();
+    if (isNaN(expiry)) expiry = Date.now() + 15 * 60 * 1000;
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(function() {
+      var diff = expiry - Date.now();
+      if (diff <= 0) {
+        clearInterval(countdownTimer); clearInterval(pollTimer);
+        markOrderExpired(currentTx); clearTx(); showState('stateExpired');
+        return;
+      }
+      var m = Math.floor(diff / 60000), s = Math.floor((diff % 60000) / 1000);
+      document.getElementById('countdown').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      var chip = document.getElementById('timerChip');
+      if (diff <= 2 * 60 * 1000) chip.classList.add('urgent'); else chip.classList.remove('urgent');
+    }, 1000);
+  }
+
+  function startPolling(transactionId) {
+    clearInterval(pollTimer);
+    pollTimer = setInterval(async function() {
+      try {
+        var res = await callFn('klikqris-status', { order_id: transactionId });
+        if (res && res.success && res.data) {
+          var status = res.data.transaction_status || res.data.status;
+          if (status === 'settlement') {
+            clearInterval(pollTimer); clearInterval(countdownTimer); clearTx(); onPaymentSuccess();
+          } else if (status === 'expire' || status === 'cancel') {
+            clearInterval(pollTimer); clearInterval(countdownTimer); markOrderExpired(transactionId); clearTx(); showState('stateExpired');
+          }
+        }
+      } catch (e) {}
+    }, 3000);
+  }
+
+  function onPaymentSuccess() {
+    var msg = 'Halo Admin CS *GivaStore*, saya sudah bayar QRIS untuk order:\n\n' +
+      'Produk: ' + order.product + '\n' + 'Paket: ' + order.package + '\n' +
+      'Profil/Email: ' + order.profile + '\n' + 'No. WA: ' + order.wa + '\n' +
+      'Jumlah: ' + order.qty + ' pcs\n' + (order.promo ? 'Kode Promo: ' + order.promo + '\n' : '') +
+      'Total Dibayar: ' + fmt(order.total) + '\n' + (currentTx ? 'ID Transaksi: ' + currentTx + '\n' : '') +
+      '\nMohon segera diproses ya kak, terima kasih!';
+    document.getElementById('btnWaConfirm').href = 'https://wa.me/' + ADMIN_WA + '?text=' + encodeURIComponent(msg);
+    document.getElementById('orderIdDisplay') && (document.getElementById('orderIdDisplay').textContent = orderToken || '-');
+    showState('stateSuccess');
+    sendOrderEmail();
+    sendOrderWhatsapp();
+  }
+
+  async function sendOrderEmail() {
+    if (emailSent) return;
+    emailSent = true;
+    try {
+      await callFn('send-order-email', {
+        product: order.product, package: order.package, qty: order.qty, profile: order.profile, wa: order.wa,
+        promo: order.promo, discount: order.discount, total: order.total, transaction_id: currentTx,
+        paid_at: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB'
+      });
+    } catch (e) {}
+  }
+
+  async function sendOrderWhatsapp() {
+    if (waSent) return;
+    if (!order.wa) { console.warn('GivaStore: sendOrderWhatsapp dilewati, order.wa kosong', order); return; }
+    waSent = true;
+    try {
+      var waRes = await callFn('send-order-whatsapp', {
+        product: order.product, package: order.package, qty: order.qty, profile: order.profile, wa: order.wa,
+        total: order.total, transaction_id: currentTx
+      });
+      console.log('GivaStore: hasil kirim WA', waRes);
+    } catch (e) {
+      console.error('GivaStore: gagal kirim WA', e);
+    }
+  }
+
+  document.getElementById('btnSaveQr').addEventListener('click', function() {
+    var img = document.getElementById('qrImage');
+    var a = document.createElement('a');
+    a.href = img.src; a.download = 'QRIS-GivaStore.png';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  document.getElementById('btnCopyOrderId').addEventListener('click', function() {
+    var btn = this;
+    var idText = document.getElementById('orderIdDisplay').textContent.trim();
+    if (!idText || idText === '-') return;
+    function showCopied() {
+      btn.classList.add('copied'); btn.innerHTML = '<i class="fas fa-check"></i>';
+      setTimeout(function() { btn.classList.remove('copied'); btn.innerHTML = '<i class="fas fa-copy"></i>'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(idText).then(showCopied).catch(function() {
+        var ta = document.createElement('textarea'); ta.value = idText; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); showCopied(); } catch (e) {} ta.remove();
+      });
+    } else {
+      var ta = document.createElement('textarea'); ta.value = idText; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); showCopied(); } catch (e) {} ta.remove();
+    }
+  });
+
+  async function resumeExistingTx() {
+    var saved = loadTx();
+    if (!saved) return false;
+    var expiry = new Date(saved.expiry_time.replace(' ', 'T') + '+07:00').getTime();
+    if (isNaN(expiry) || expiry <= Date.now()) { clearTx(); return false; }
+    try {
+      var statusRes = await callFn('klikqris-status', { order_id: saved.transaction_id });
+      if (statusRes && statusRes.success && statusRes.data) {
+        var status = statusRes.data.transaction_status || statusRes.data.status;
+        if (status === 'settlement') { clearTx(); currentTx = saved.transaction_id; onPaymentSuccess(); return true; }
+        if (status === 'expire' || status === 'cancel') { clearTx(); return false; }
+      }
+    } catch (e) {}
+    currentTx = saved.transaction_id;
+    document.getElementById('qrAmount').textContent = fmt(saved.amount || order.total);
+    document.getElementById('qrImage').src = saved.qr_url;
+    showState('stateQr');
+    startCountdown(saved.expiry_time);
+    startPolling(saved.transaction_id);
+    return true;
+  }
+
+  function generateFallbackOrderId() {
+    var now2 = new Date();
+    return 'GIVA-' + String(now2.getDate()).padStart(2,'0') + String(now2.getMonth()+1).padStart(2,'0') + String(now2.getFullYear()).slice(-2) + '-' + String(Math.floor(Math.random()*10000)).padStart(4,'0');
+  }
+
+  async function generateQris() {
+    showState('stateLoading');
+    var resumed = await resumeExistingTx();
+    if (resumed) return;
+    try {
+      // KlikQRIS wajib dikasih order_id KITA SENDIRI di awal (bukan dapat ID dari mereka).
+      // Kalau orderToken kosong (akses lama tanpa token), bikin ID baru dulu di sini.
+      var genOrderId = orderToken || generateFallbackOrderId();
+
+      var res = await callFn('klikqris-generate', { amount: order.total, order_id: genOrderId, keterangan: order.product + ' - ' + order.package });
+      if (!res || res.success !== true || !res.data) {
+        document.getElementById('errorDesc').textContent = (res && res.message) ? res.message : 'Gagal membuat QRIS. Silakan coba lagi.';
+        showState('stateError');
+        return;
+      }
+      var d = res.data;
+      currentTx = d.transaction_id;
+      saveTx({ transaction_id: d.transaction_id, qr_url: d.qr_url, expiry_time: d.expiry_time, amount: d.amount });
+      createOrderRecord(d.transaction_id);
+      // PENTING: tampilkan d.amount (sudah termasuk kode unik dari KlikQRIS), BUKAN order.total.
+      // Kalau customer bayar nominal yang beda dikit dari ini, sistem bisa gagal mendeteksi pembayaran.
+      document.getElementById('qrAmount').textContent = fmt(d.amount || order.total);
+      document.getElementById('qrImage').src = d.qr_url;
+      showState('stateQr');
+      startCountdown(d.expiry_time);
+      startPolling(d.transaction_id);
+    } catch (e) {
+      document.getElementById('errorDesc').textContent = 'Tidak bisa terhubung ke server pembayaran. Cek koneksi internet Anda.';
+      showState('stateError');
+    }
+  }
+
+  async function initPayPage() {
+    var loaded = false;
+    if (orderToken) loaded = await loadOrderFromToken();
+    if (!loaded) loadOrderFromLegacyParams();
+    renderSummary();
+    if (currentTx) return;
+    if (order.total <= 0) {
+      document.getElementById('errorDesc').textContent = 'Data pesanan tidak ditemukan atau tidak lengkap. Silakan ulangi dari halaman produk.';
+      showState('stateError');
+    } else {
+      generateQris();
+    }
+  }
+
+  initPayPage();
+</script>
+</body>
+</html>

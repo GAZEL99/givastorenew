@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GivaStore Admin</title>
+<meta name="robots" content="noindex, nofollow">
+
+<!-- PWA: biar bisa di-install ke homescreen dan kebuka standalone kayak app native -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0033FF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GivaStore Admin">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+
+<!-- Preconnect biar font & icon library gak nunggu DNS/handshake baru -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --blue: #0033FF; --blue-dark: #0022B8; --blue-light: #EAEEFF;
+    --lime: #0033FF; --lime-dark: #0022B8;
+    --primary: #0A0A12; --text-dark: #0A0A12; --text: #3D3D47; --text-light: #8A8A96;
+    --light: #FFFFFF; --light-gray: #F6F7FB; --gray: #ECEDF5; --border: #E7E8F1;
+    --shadow: 0 6px 20px rgba(16,17,32,.06); --shadow-sm: 0 2px 8px rgba(16,17,32,.05); --shadow-lg: 0 14px 40px rgba(16,17,32,.09);
+    --radius: 16px; --transition: all 0.15s ease;
+    --success: #10B981; --error: #FF4757; --warning: #F5C535;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html { font-size:15px; -webkit-font-smoothing:antialiased; }
+  body { background: var(--light-gray); color: var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; min-height: 100vh; }
+  a { color: inherit; text-decoration: none; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-thumb { background: var(--gray); border-radius: 10px; }
+
+  @keyframes fadeInUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulseDot { 0%,100%{opacity:.4;} 50%{opacity:1;} }
+  @keyframes slideInRight { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+  @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+  .ripple-effect { position: absolute; border-radius: 50%; background: rgba(255,255,255,.4); width: 10px; height: 10px; pointer-events: none; transform: scale(0); animation: ripple .5s linear; }
+
+  /* ===== LOGIN SCREEN ===== */
+  #loginScreen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+    background: var(--light-gray);
+  }
+  .login-card {
+    width: 100%; max-width: 380px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 32px 28px; animation: fadeInUp .4s ease both;
+  }
+  .login-logo { display: flex; flex-direction: column; align-items: center; margin-bottom: 22px; }
+  .login-logo-img { width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--blue-light); object-fit: cover; margin-bottom: 10px; }
+  .login-logo h1 { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-weight:700; font-size: 1.3rem; color: var(--text-dark); }
+  .login-logo p { font-size: .75rem; color: var(--text-light); font-weight: 700; margin-top: 2px; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: .8rem; font-weight: 700; margin-bottom: 6px; }
+  .form-group input {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: .9rem;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; background: var(--light-gray); transition: var(--transition);
+  }
+  .form-group input:focus { outline: none; border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px var(--blue-light); }
+  .btn { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; border-radius: 999px; font-weight:600; font-size: .88rem; border: none; cursor: pointer; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; transition: var(--transition); }
+  .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 4px 14px rgba(0,51,255,.25); }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-primary:active { transform: scale(.98); box-shadow: 0 2px 8px rgba(0,51,255,.2); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .login-msg { margin-top: 12px; padding: 10px 14px; border-radius: 10px; font-size: .8rem; font-weight: 700; display: none; }
+  .login-msg.error { background: rgba(255,71,87,.1); color: var(--error); border: 1.5px solid var(--error); display: block; }
+
+  /* ===== APP LAYOUT ===== */
+  #appScreen { display: none; min-height: 100vh; }
+  #appScreen.active { display: flex; }
+
+  .sidebar {
+    width: 240px; background: var(--primary); color: #fff; flex-shrink: 0; display: flex; flex-direction: column;
+    padding: 20px 14px; position: sticky; top: 0; height: 100vh;
+  }
+  @media (max-width: 900px) { .sidebar { position: fixed; left: -260px; z-index: 1200; transition: left .3s ease; box-shadow: var(--shadow-lg); }
+    .sidebar.open { left: 0; } }
+
+  .sb-brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 20px; border-bottom: 2px solid rgba(255,255,255,.1); margin-bottom: 16px; }
+  .sb-brand img { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); }
+  .sb-brand-text .main { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-weight:700; font-size: 1rem; }
+  .sb-brand-text .main span { color: #8FA8FF; }
+  .sb-brand-text .sub { font-size: .6rem; color: rgba(255,255,255,.5); font-weight: 700; }
+
+  .sb-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .sb-link {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; font-weight: 700;
+    font-size: .87rem; color: rgba(255,255,255,.7); cursor: pointer; transition: var(--transition); position: relative;
+  }
+  .sb-link i { width: 18px; text-align: center; }
+  .sb-link:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .sidebar .sb-link.active { background: var(--blue); color: #fff; }
+  .sb-link .badge-count { margin-left: auto; background: var(--error); color: #fff; font-size: .65rem; font-weight:600; padding: 2px 7px; border-radius: 999px; }
+
+  .sb-logout { margin-top: 14px; padding-top: 14px; border-top: 2px solid rgba(255,255,255,.1); }
+
+  /* ===== Safe area (biar konten gak ketiban notch/home-indicator pas di-install jadi app) ===== */
+  body { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+  /* ===== BOTTOM TAB BAR (mobile) - bikin kerasa app, bukan cuma website di-scroll ===== */
+  .bottom-nav {
+    display: none;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1100;
+    background: #fff; border-top: 1px solid var(--border);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .bottom-nav .bn-link {
+    display: flex; flex-direction: column; align-items: center; gap: 2px; justify-content: center;
+    padding: 6px 2px; border-radius: 10px; color: var(--text-light); font-size: .6rem; font-weight: 700;
+    cursor: pointer; position: relative;
+  }
+  .bottom-nav .bn-link i { font-size: 1.05rem; }
+  .bottom-nav .bn-link.active { color: var(--blue); background: var(--blue-light); }
+  .bottom-nav .bn-link .badge-count { position: absolute; top: 2px; right: 18%; background: var(--error); color: #fff; font-size: .58rem; font-weight:600; min-width: 15px; height: 15px; border-radius: 999px; display: flex; align-items: center; justify-content: center; }
+  @media (max-width: 900px) {
+    .bottom-nav { display: grid; }
+    .main-area { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+  }
+
+  .main-area { flex: 1; min-width: 0; }
+  .topbar { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .topbar h2 { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-weight:600; font-size: 1.1rem; }
+  .mobile-menu-btn { display: none; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: #fff; align-items: center; justify-content: center; cursor: pointer; }
+  @media (max-width: 900px) { .mobile-menu-btn { display: flex; } }
+  .live-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 700; color: var(--success); background: rgba(16,185,129,.1); border: 1.5px solid var(--success); padding: 5px 12px; border-radius: 999px; }
+  .live-indicator .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulseDot 1.3s ease-in-out infinite; }
+
+  .content-panel { display: none; padding: 22px 24px 60px; animation: fadeInUp .35s ease both; }
+  .content-panel.active { display: block; }
+
+  /* STAT CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 14px; margin-bottom: 22px; }
+  .stat-card { background: #fff; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); transition: var(--transition); }
+  .stat-card:hover { box-shadow: var(--shadow); }
+  @media (max-width: 640px) {
+    .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .stat-card { padding: 10px 8px; border-radius: 12px; text-align: center; }
+    .stat-card .stat-label { font-size: .58rem; justify-content: center; gap: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat-card .stat-value { font-size: 1.15rem; }
+    .stat-card .stat-sub { display: none; }
+  }
+  .stat-label { font-size: .72rem; font-weight:600; color: var(--text-light); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .stat-label i { color: var(--blue); }
+  .stat-value { font-size: 1.5rem; font-weight:700; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums; color: var(--text-dark); }
+  .stat-sub { font-size: .72rem; color: var(--text-light); margin-top: 4px; }
+
+  .panel-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .panel-head h3 { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-weight:600; font-size: .98rem; display: flex; align-items: center; gap: 8px; }
+  .panel-head h3 i { color: var(--blue); }
+
+  /* ORDERS TABLE */
+  .order-row-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 14px;
+    margin-bottom: 10px; transition: var(--transition); background: var(--light-gray); position: relative;
+  }
+  .order-row-item.new-flash { animation: newOrderFlash 1.8s ease; }
+  @keyframes newOrderFlash { 0% { background: var(--blue-light); border-color: var(--blue); } 100% { background: var(--light-gray); border-color: var(--border); } }
+  .order-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; border: 1px solid var(--border); }
+  .order-info { flex: 1; min-width: 0; }
+  .order-title { font-weight:600; font-size: .88rem; color: var(--text-dark); }
+  .order-meta { font-size: .74rem; color: var(--text-light); margin-top: 2px; }
+  .order-right { text-align: right; flex-shrink: 0; }
+  .order-amount { font-weight:700; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums; font-size: .92rem; color: var(--text-dark); }
+  .status-chip { display: inline-flex; align-items: center; gap: 4px; font-size: .65rem; font-weight:600; padding: 3px 9px; border-radius: 999px; margin-top: 4px; }
+  .status-chip.pending { background: rgba(245,197,53,.15); color: #B8860B; border: 1.5px solid var(--warning); }
+  .status-chip.paid { background: rgba(16,185,129,.12); color: var(--success); border: 1.5px solid var(--success); }
+  .status-chip.expired { background: rgba(255,71,87,.1); color: var(--error); border: 1.5px solid var(--error); }
+
+  .empty-note { text-align: center; padding: 30px 10px; color: var(--text-light); font-size: .88rem; }
+  .empty-note i { font-size: 1.8rem; color: var(--gray); margin-bottom: 8px; display: block; }
+  .loading-note { text-align: center; padding: 24px; color: var(--text-light); font-size: .85rem; }
+  .spinner-sm { width: 16px; height: 16px; border: 3px solid var(--gray); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 6px; }
+
+  /* FINANCE */
+  .finance-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .finance-tab-btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 999px; font-weight: 700; font-size: .8rem; background: #fff; cursor: pointer; transition: var(--transition); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
+  .finance-tab-btn.active { background: var(--primary); color: #fff; }
+
+  .expense-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--gray); border-radius: 12px; margin-bottom: 8px; }
+  .expense-cat { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,71,87,.12); color: var(--error); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .expense-info { flex: 1; min-width: 0; }
+  .expense-desc { font-weight: 700; font-size: .85rem; }
+  .expense-meta { font-size: .72rem; color: var(--text-light); }
+  .expense-amount { font-weight:600; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums; color: var(--error); }
+  .del-btn { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--gray); background: #fff; color: var(--text-light); cursor: pointer; transition: var(--transition); flex-shrink: 0; }
+  .del-btn:hover { background: var(--error); color: #fff; border-color: var(--error); }
+
+  .inline-form { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; align-items: end; margin-bottom: 18px; }
+  @media (max-width: 700px) { .inline-form { grid-template-columns: 1fr 1fr; } }
+  .inline-form .form-group { margin-bottom: 0; }
+  .inline-form input, .inline-form select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: .85rem; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
+  .inline-form .btn { width: auto; padding: 10px 18px; white-space: nowrap; }
+
+  /* CONTENT TAB */
+  .content-field { margin-bottom: 16px; }
+  .content-field label { display: flex; align-items: center; gap: 8px; font-size: .82rem; font-weight: 700; margin-bottom: 7px; }
+  .content-field input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: .85rem; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
+  .img-preview { width: 100%; max-width: 280px; border-radius: 12px; border: 1px solid var(--border); margin-top: 8px; display: block; }
+  .banner-preview { width: 100%; max-height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); margin-top: 8px; }
+
+  .popup-item { border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; background: var(--light-gray); }
+  .popup-item-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .popup-item-head .name { font-weight:600; font-size: .88rem; }
+  .toggle-switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--gray); border-radius: 999px; cursor: pointer; transition: var(--transition); border: 1px solid var(--border); }
+  .toggle-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 2px; background: #fff; border-radius: 50%; transition: var(--transition); border: 1.5px solid var(--border); }
+  .toggle-switch input:checked + .toggle-slider { background: var(--lime); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(17px); }
+
+  /* PRODUCTS TAB */
+  .product-row { display: grid; grid-template-columns: 50px 1.5fr 1fr 1fr 1fr auto; gap: 10px; align-items: center; padding: 10px; border-bottom: 1.5px dashed var(--gray); font-size: .84rem; }
+  @media (max-width: 800px) { .product-row { grid-template-columns: 1fr; gap: 6px; padding: 14px 10px; border: 1px solid var(--gray); border-radius: 12px; margin-bottom: 10px; } }
+  .product-row img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--border); }
+  .product-row input { width: 100%; padding: 7px 9px; border: 1.5px solid var(--gray); border-radius: 8px; font-size: .82rem; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
+  .product-row input:focus { outline: none; border-color: var(--blue); }
+  .save-row-btn { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--blue); color: #fff; cursor: pointer; transition: var(--transition); }
+  .save-row-btn:hover { transform: scale(1.08); }
+  .col-label { display: none; font-size: .7rem; font-weight: 700; color: var(--text-light); }
+  @media (max-width: 800px) { .col-label { display: block; margin-top: 4px; } }
+
+  /* TOAST */
+  #toastHost { position: fixed; top: calc(70px + env(safe-area-inset-top, 0px)); right: 16px; z-index: 1050; display: flex; flex-direction: column; gap: 8px; max-width: min(340px, calc(100vw - 32px)); }
+  .toast { background: var(--primary); color: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow-lg); animation: slideInRight .35s ease both; display: flex; align-items: flex-start; gap: 10px; }
+  .toast i.icon { color: #8FA8FF; font-size: 1.1rem; margin-top: 2px; }
+  .toast .t-title { font-weight:600; font-size: .85rem; }
+  .toast .t-desc { font-size: .76rem; color: rgba(255,255,255,.7); margin-top: 2px; }
+
+  /* MODAL OVERLAY */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(10,10,18,.55); z-index: 2500; display: none; align-items: center; justify-content: center; padding: 16px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); animation: fadeInUp .3s ease both; }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: #fff; z-index: 2; }
+  .modal-head h3 { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-weight:600; font-size: 1rem; }
+  .modal-close-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: #fff; cursor: pointer; }
+  .modal-body { padding: 18px 20px; }
+  .modal-foot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-outline-modal { padding: 10px 18px; border-radius: 999px; border: 1px solid var(--border); background: #fff; font-weight: 700; font-size: .82rem; cursor: pointer; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .modal-grid { grid-template-columns: 1fr; } }
+  .modal-grid .full { grid-column: 1 / -1; }
+  .mfield label { display: block; font-size: .78rem; font-weight: 700; margin-bottom: 5px; }
+  .mfield input, .mfield select, .mfield textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: .84rem; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
+  .check-row { display: flex; align-items: center; gap: 8px; font-size: .84rem; font-weight: 700; }
+  .sub-list-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .sub-list-item input { flex: 1; padding: 8px 10px; border: 1.5px solid var(--gray); border-radius: 8px; font-size: .8rem; }
+  .add-sub-btn { font-size: .78rem; font-weight: 700; color: var(--blue); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .rm-sub-btn { width: 28px; height: 28px; flex-shrink: 0; border-radius: 7px; border: 1.5px solid var(--gray); background: #fff; color: var(--error); cursor: pointer; }
+
+  /* CATEGORY & PROMO CARDS */
+  .cat-item, .promo-item { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; background: var(--light-gray); }
+  .cat-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border); }
+  .cat-info { flex: 1; min-width: 0; }
+  .cat-name { font-weight:600; font-size: .88rem; }
+  .cat-meta { font-size: .74rem; color: var(--text-light); }
+  .promo-code-tag { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums; font-weight:600; background: var(--primary); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: .82rem; flex-shrink: 0; }
+  .row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border); background: #fff; cursor: pointer; transition: var(--transition); }
+  .icon-btn:hover { background: var(--blue-light); }
+  .icon-btn.danger:hover { background: var(--error); color: #fff; }
+
+  /* PRODUCT/ORDER SEARCH+FILTER BAR */
+  .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .filter-bar input[type="text"], .filter-bar select { padding: 8px 14px; border: 1px solid var(--border); border-radius: 999px; font-size: .82rem; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
+</style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="https://rblktttasrxemtkhknvt.supabase.co/storage/v1/object/public/product-images/logo.jpg" class="login-logo-img" alt="Logo" onerror="this.style.display='none'">
+        <h1>GivaStore</h1>
+        <p>Admin Dashboard</p>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="admin@email.com" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" id="btnLogin"><i class="fas fa-right-to-bracket"></i> Masuk</button>
+      <div class="login-msg" id="loginMsg"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="appScreen">
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-brand">
+        <img src="https://rblktttasrxemtkhknvt.supabase.co/storage/v1/object/public/product-images/logo.jpg" alt="Logo" onerror="this.style.display='none'">
+        <div class="sb-brand-text">
+          <div class="main">Giva<span>Store</span></div>
+          <div class="sub">Admin Panel</div>
+        </div>
+      </div>
+      <nav class="sb-nav">
+        <div class="sb-link active" data-panel="panelOrders"><i class="fas fa-receipt"></i> Pesanan <span class="badge-count" id="pendingBadge" style="display:none;">0</span></div>
+        <div class="sb-link" data-panel="panelFinance"><i class="fas fa-sack-dollar"></i> Keuangan</div>
+        <div class="sb-link" data-panel="panelContent"><i class="fas fa-images"></i> Konten</div>
+        <div class="sb-link" data-panel="panelProducts"><i class="fas fa-box"></i> Produk</div>
+        <div class="sb-link" data-panel="panelCategories"><i class="fas fa-folder-tree"></i> Kategori</div>
+        <div class="sb-link" data-panel="panelPromo"><i class="fas fa-ticket"></i> Kode Promo</div>
+      </nav>
+      <div class="sb-logout">
+        <div class="sb-link" id="btnLogout"><i class="fas fa-right-from-bracket"></i> Keluar</div>
+      </div>
+    </aside>
+
+    <nav class="bottom-nav" id="bottomNav">
+      <div class="sb-link bn-link active" data-panel="panelOrders"><i class="fas fa-receipt"></i>Pesanan<span class="badge-count" id="pendingBadgeBn" style="display:none;">0</span></div>
+      <div class="sb-link bn-link" data-panel="panelFinance"><i class="fas fa-sack-dollar"></i>Keuangan</div>
+      <div class="sb-link bn-link" data-panel="panelProducts"><i class="fas fa-box"></i>Produk</div>
+      <div class="sb-link bn-link" data-panel="panelContent"><i class="fas fa-images"></i>Konten</div>
+      <div class="bn-link" id="btnMoreMenu"><i class="fas fa-ellipsis"></i>Menu</div>
+    </nav>
+
+    <div class="main-area">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+          <h2 id="topbarTitle">Pesanan</h2>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="finance-tab-btn" id="btnInstallApp" style="border-color:var(--blue);color:#fff;background:var(--blue);display:none;"><i class="fas fa-download"></i> Install App</button>
+          <button class="finance-tab-btn" id="btnEnablePush" style="border-color:var(--blue);color:var(--blue);"><i class="fas fa-bell"></i> Aktifkan Notifikasi</button>
+          <div class="live-indicator"><span class="dot"></span> Live</div>
+        </div>
+      </div>
+
+      <!-- PANEL: ORDERS -->
+      <div class="content-panel active" id="panelOrders">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label"><i class="fas fa-hourglass-half"></i> Pending</div><div class="stat-value" id="statPendingCount">0</div><div class="stat-sub">Menunggu pembayaran</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="fas fa-circle-check"></i> Paid Hari Ini</div><div class="stat-value" id="statPaidToday">0</div><div class="stat-sub">Transaksi berhasil</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="fas fa-coins"></i> Omzet Hari Ini</div><div class="stat-value" id="statRevenueToday">Rp0</div><div class="stat-sub">Total pemasukan</div></div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-head"><h3><i class="fas fa-list"></i> Riwayat Pesanan Terbaru</h3>
+            <div class="filter-bar">
+              <input type="text" id="orderSearchBox" placeholder="Cari order ID / produk...">
+              <select id="orderStatusFilter">
+                <option value="">Semua Status</option>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="expired">Expired</option>
+              </select>
+              <button class="finance-tab-btn" id="btnRefreshOrders"><i class="fas fa-rotate"></i> Refresh</button>
+            </div>
+          </div>
+          <div id="ordersList"><div class="loading-note"><span class="spinner-sm"></span> Memuat pesanan...</div></div>
+        </div>
+      </div>
+
+      <!-- PANEL: FINANCE -->
+      <div class="content-panel" id="panelFinance">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label"><i class="fas fa-calendar-day"></i> Hari Ini</div><div class="stat-value" id="incToday">Rp0</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="fas fa-calendar-week"></i> Minggu Ini</div><div class="stat-value" id="incWeek">Rp0</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="fas fa-calendar"></i> Bulan Ini</div><div class="stat-value" id="incMonth">Rp0</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="fas fa-calendar-check"></i> Tahun Ini</div><div class="stat-value" id="incYear">Rp0</div></div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-head"><h3><i class="fas fa-arrow-trend-up"></i> Ringkasan Bulan Ini</h3></div>
+          <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
+            <div><div class="stat-label">Pemasukan</div><div class="stat-value" id="sumIncomeMonth" style="color:var(--success)">Rp0</div></div>
+            <div><div class="stat-label">Pengeluaran</div><div class="stat-value" id="sumExpenseMonth" style="color:var(--error)">Rp0</div></div>
+            <div><div class="stat-label">Laba Bersih</div><div class="stat-value" id="sumProfitMonth">Rp0</div></div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-head"><h3><i class="fas fa-money-bill-trend-down"></i> Catat Pengeluaran</h3></div>
+          <div class="inline-form">
+            <div class="form-group"><label>Deskripsi</label><input type="text" id="expDesc" placeholder="Contoh: Beli stok akun Netflix"></div>
+            <div class="form-group"><label>Kategori</label>
+              <select id="expCategory">
+                <option>Stok Produk</option><option>Operasional</option><option>Marketing</option><option>Gaji/Fee Admin</option><option>Lainnya</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Jumlah (Rp)</label><input type="number" id="expAmount" placeholder="50000"></div>
+            <button class="btn btn-primary" id="btnAddExpense"><i class="fas fa-plus"></i> Tambah</button>
+          </div>
+          <div id="expenseList"><div class="loading-note"><span class="spinner-sm"></span> Memuat pengeluaran...</div></div>
+        </div>
+      </div>
+
+      <!-- PANEL: CONTENT -->
+      <div class="content-panel" id="panelContent">
+        <div class="panel-card">
+          <div class="panel-head"><h3><i class="fas fa-image"></i> Logo Toko</h3></div>
+          <div class="content-field">
+            <label><i class="fas fa-link"></i> URL Logo</label>
+            <input type="text" id="settingLogoUrl" placeholder="https://...">
+            <img id="logoPreview" class="img-preview" src="" alt="" style="display:none;">
+          </div>
+          <button class="btn btn-primary" id="btnSaveLogo" style="width:auto;padding:11px 22px;"><i class="fas fa-save"></i> Simpan Logo</button>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-head"><h3><i class="fas fa-images"></i> Banner Carousel (Homepage)</h3></div>
+          <div class="content-field">
+            <label>Banner 1</label>
+            <input type="text" id="banner1" placeholder="https://...">
+            <img id="banner1Preview" class="banner-preview" src="" alt="" style="display:none;">
+          </div>
+          <div class="content-field">
+            <label>Banner 2</label>
+            <input type="text" id="banner2" placeholder="https://...">
+            <img id="banner2Preview" class="banner-preview" src="" alt="" style="display:none;">
+          </div>
+          <div class="content-field">
+            <label>Banner 3</label>
+            <input type="text" id="banner3" placeholder="https://...">
+            <img id="banner3Preview" class="banner-preview" src="" alt="" style="display:none;">
+          </div>
+          <button class="btn btn-primary" id="btnSaveBanners" style="width:auto;padding:11px 22px;"><i class="fas fa-save"></i> Simpan Banner</button>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-head"><h3><i class="fas fa-bullhorn"></i> Popup Pengumuman</h3>
+            <button class="finance-tab-btn" id="btnNewPopup"><i class="fas fa-plus"></i> Popup Baru</button>
+          </div>
+          <div id="popupList"><div class="loading-note"><span class="spinner-sm"></span> Memuat popup...</div></div>
+        </div>
+      </div>
+
+      <!-- PANEL: PRODUCTS -->
+      <div class="content-panel" id="panelProducts">
+        <div class="panel-card">
+          <div class="panel-head"><h3><i class="fas fa-box-open"></i> Kelola Produk</h3>
+            <div class="filter-bar">
+              <input type="text" id="productSearchBox" placeholder="Cari produk...">
+              <button class="btn btn-primary" id="btnAddProduct" style="width:auto;padding:9px 16px;"><i class="fas fa-plus"></i> Tambah Produk</button>
+            </div>
+          </div>
+          <div id="productsList"><div class="loading-note"><span class="spinner-sm"></span> Memuat produk...</div></div>
+        </div>
+      </div>
+
+      <!-- PANEL: CATEGORIES -->
+      <div class="content-panel" id="panelCategories">
+        <div class="panel-card">
+          <div class="panel-head"><h3><i class="fas fa-folder-tree"></i> Kelola Kategori</h3>
+            <button class="btn btn-primary" id="btnAddCategory" style="width:auto;padding:9px 16px;"><i class="fas fa-plus"></i> Tambah Kategori</button>
+          </div>
+          <div id="categoriesList"><div class="loading-note"><span class="spinner-sm"></span> Memuat kategori...</div></div>
+        </div>
+      </div>
+
+      <!-- PANEL: PROMO -->
+      <div class="content-panel" id="panelPromo">
+        <div class="panel-card">
+          <div class="panel-head"><h3><i class="fas fa-ticket"></i> Kode Promo & Diskon</h3>
+            <button class="btn btn-primary" id="btnAddPromo" style="width:auto;padding:9px 16px;"><i class="fas fa-plus"></i> Buat Kode</button>
+          </div>
+          <div id="promoList"><div class="loading-note"><span class="spinner-sm"></span> Memuat kode promo...</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toastHost"></div>
+
+  <!-- MODAL: PRODUCT -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-box">
+      <div class="modal-head"><h3 id="productModalTitle">Tambah Produk</h3><button class="modal-close-btn" data-close="productModal"><i class="fas fa-times"></i></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="pmId">
+        <div class="modal-grid">
+          <div class="mfield"><label>Nama Produk *</label><input type="text" id="pmName" placeholder="Contoh: Netflix Premium"></div>
+          <div class="mfield"><label>Slug *</label><input type="text" id="pmSlug" placeholder="Contoh: Netflix"></div>
+          <div class="mfield"><label>Kategori</label><select id="pmCategory"></select></div>
+          <div class="mfield"><label>URL Gambar</label><input type="text" id="pmImage" placeholder="https://..."></div>
+          <div class="mfield"><label>Harga Jual (Rp)</label><input type="number" id="pmPrice" placeholder="25000"></div>
+          <div class="mfield"><label>Harga Coret (Rp)</label><input type="number" id="pmOriginal" placeholder="49000"></div>
+          <div class="mfield"><label>Diskon (%)</label><input type="number" id="pmDiscount" placeholder="0"></div>
+          <div class="mfield"><label>Stok</label><input type="number" id="pmStock" placeholder="100"></div>
+          <div class="mfield full"><label>Deskripsi</label><textarea id="pmDesc" rows="2" placeholder="Deskripsi singkat..."></textarea></div>
+          <div class="mfield"><label class="check-row"><input type="checkbox" id="pmPopular"> Produk Populer</label></div>
+          <div class="mfield"><label class="check-row"><input type="checkbox" id="pmFlash"> Flash Sale</label></div>
+        </div>
+
+        <div style="border-top:2px dashed var(--gray);margin:16px 0;padding-top:14px;">
+          <label style="font-weight:600;font-size:.85rem;"><i class="fas fa-tags"></i> Paket Harga</label>
+          <div id="pmPkgList" style="margin-top:8px;"></div>
+          <div class="add-sub-btn" id="pmAddPkg"><i class="fas fa-circle-plus"></i> Tambah Paket</div>
+        </div>
+
+        <div style="border-top:2px dashed var(--gray);margin:16px 0;padding-top:14px;">
+          <label style="font-weight:600;font-size:.85rem;"><i class="fas fa-keyboard"></i> Field Input Pembeli</label>
+          <div id="pmInpList" style="margin-top:8px;"></div>
+          <div class="add-sub-btn" id="pmAddInp"><i class="fas fa-circle-plus"></i> Tambah Field</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-outline-modal" data-close="productModal">Batal</button>
+        <button class="btn btn-primary" id="pmSave" style="width:auto;padding:10px 20px;"><i class="fas fa-save"></i> Simpan Produk</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CATEGORY -->
+  <div class="modal-overlay" id="categoryModal">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-head"><h3 id="categoryModalTitle">Tambah Kategori</h3><button class="modal-close-btn" data-close="categoryModal"><i class="fas fa-times"></i></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="cmId">
+        <div class="mfield" style="margin-bottom:12px;"><label>Nama Kategori *</label><input type="text" id="cmName" placeholder="Contoh: Streaming"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-outline-modal" data-close="categoryModal">Batal</button>
+        <button class="btn btn-primary" id="cmSave" style="width:auto;padding:10px 20px;"><i class="fas fa-save"></i> Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PROMO -->
+  <div class="modal-overlay" id="promoModal">
+    <div class="modal-box">
+      <div class="modal-head"><h3 id="promoModalTitle">Buat Kode Promo</h3><button class="modal-close-btn" data-close="promoModal"><i class="fas fa-times"></i></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="prmId">
+        <div class="modal-grid">
+          <div class="mfield"><label>Kode Promo *</label><input type="text" id="prmCode" placeholder="HEMAT20" style=""></div>
+          <div class="mfield"><label>Tipe Diskon *</label><select id="prmType"><option value="percentage">Persentase (%)</option><option value="fixed">Nominal Tetap (Rp)</option></select></div>
+          <div class="mfield"><label>Nilai Diskon *</label><input type="number" id="prmValue" placeholder="20"></div>
+          <div class="mfield"><label>Maks. Diskon (Rp)</label><input type="number" id="prmMaxDisc" placeholder="Opsional"></div>
+          <div class="mfield"><label>Min. Belanja (Rp)</label><input type="number" id="prmMinOrder" placeholder="0"></div>
+          <div class="mfield"><label>Maks. Penggunaan</label><input type="number" id="prmMaxUse" placeholder="Kosongkan = tak terbatas"></div>
+          <div class="mfield"><label>Berlaku Mulai</label><input type="datetime-local" id="prmStart"></div>
+          <div class="mfield"><label>Berlaku Sampai</label><input type="datetime-local" id="prmEnd"></div>
+          <div class="mfield full"><label>Deskripsi</label><input type="text" id="prmDesc" placeholder="Contoh: Diskon spesial hari ini"></div>
+          <div class="mfield"><label class="check-row"><input type="checkbox" id="prmActive" checked> Aktifkan Promo</label></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-outline-modal" data-close="promoModal">Batal</button>
+        <button class="btn btn-primary" id="prmSave" style="width:auto;padding:10px 20px;"><i class="fas fa-save"></i> Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ORDER DETAIL -->
+  <div class="modal-overlay" id="orderDetailModal">
+    <div class="modal-box">
+      <div class="modal-head"><h3>Detail Pesanan</h3><button class="modal-close-btn" data-close="orderDetailModal"><i class="fas fa-times"></i></button></div>
+      <div class="modal-body" id="orderDetailBody"></div>
+      <div class="modal-foot"><button class="btn-outline-modal" data-close="orderDetailModal">Tutup</button></div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  var SUPABASE_URL = 'https://rblktttasrxemtkhknvt.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJibGt0dHRhc3J4ZW10a2hrbnZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NDQ5MzMsImV4cCI6MjEwMTAyMDkzM30.l4mPqAlPhZk-Z73_sKNARc3qTxAfUsKZyNl9u6N90Lw';
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  /* Daftarkan service worker sedini mungkin (dibutuhkan biar browser anggap halaman ini
+     "installable" - syarat PWA: manifest valid + SW aktif dengan fetch handler + HTTPS). */
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw-push.js').catch(function (e) {
+      console.warn('Service worker gagal didaftarkan', e);
+    });
+  }
+
+  /* Tangkap event install PWA, biar bisa munculin tombol "Install App" sendiri
+     (browser gak selalu nampilin banner instalnya otomatis). */
+  var deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    var btn = document.getElementById('btnInstallApp');
+    if (btn) btn.style.display = 'inline-flex';
+  });
+  window.addEventListener('appinstalled', function () {
+    deferredInstallPrompt = null;
+    var btn = document.getElementById('btnInstallApp');
+    if (btn) btn.style.display = 'none';
+  });
+
+  function fmt(n) { return 'Rp' + Math.round(Number(n || 0)).toLocaleString('id-ID'); }
+  function escHtml(s) { return String(s || '').replace(/[&<>"']/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function toast(title, desc, icon) {
+    var host = document.getElementById('toastHost');
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML = '<i class="icon ' + (icon || 'fas fa-bell') + '"></i><div><div class="t-title">' + escHtml(title) + '</div><div class="t-desc">' + escHtml(desc || '') + '</div></div>';
+    host.appendChild(el);
+    setTimeout(function() { el.style.transition = 'opacity .3s ease'; el.style.opacity = '0'; setTimeout(function(){ el.remove(); }, 300); }, 5000);
+  }
+
+  function addRipple(el) {
+    el.addEventListener('click', function(e) {
+      var r = document.createElement('span'); r.className = 'ripple-effect';
+      var rect = el.getBoundingClientRect();
+      r.style.left = (e.clientX - rect.left - 5) + 'px'; r.style.top = (e.clientY - rect.top - 5) + 'px';
+      el.style.position = el.style.position || 'relative';
+      el.appendChild(r); setTimeout(function() { r.remove(); }, 500);
+    });
+  }
+  document.querySelectorAll('.btn').forEach(addRipple);
+
+  /* ================= AUTH ================= */
+  var btnLogin = document.getElementById('btnLogin');
+  var loginMsg = document.getElementById('loginMsg');
+
+  async function doLogin() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var password = document.getElementById('loginPassword').value;
+    loginMsg.style.display = 'none';
+    if (!email || !password) { showLoginError('Email dan password wajib diisi.'); return; }
+
+    btnLogin.disabled = true; btnLogin.innerHTML = '<span class="spinner-sm"></span> Memproses...';
+    try {
+      var res = await sb.auth.signInWithPassword({ email: email, password: password });
+      if (res.error) throw res.error;
+      enterApp();
+    } catch (e) {
+      showLoginError('Login gagal. Cek kembali email & password Anda.');
+    } finally {
+      btnLogin.disabled = false; btnLogin.innerHTML = '<i class="fas fa-right-to-bracket"></i> Masuk';
+    }
+  }
+  function showLoginError(msg) { loginMsg.className = 'login-msg error'; loginMsg.textContent = msg; loginMsg.style.display = 'block'; }
+  btnLogin.addEventListener('click', doLogin);
+  document.getElementById('loginPassword').addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
+
+  document.getElementById('btnLogout').addEventListener('click', async function() {
+    await sb.auth.signOut();
+    document.getElementById('appScreen').classList.remove('active');
+    document.getElementById('loginScreen').style.display = 'flex';
+  });
+
+  function enterApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').classList.add('active');
+    initDashboard();
+  }
+
+  // Cek sesi yang sudah ada (biar tidak perlu login ulang tiap buka halaman)
+  sb.auth.getSession().then(function(res) {
+    if (res.data && res.data.session) enterApp();
+  });
+
+  /* ================= NAVIGATION ================= */
+  var panelTitles = { panelOrders: 'Pesanan', panelFinance: 'Keuangan', panelContent: 'Konten', panelProducts: 'Produk', panelCategories: 'Kategori', panelPromo: 'Kode Promo' };
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('[data-close]').forEach(function(btn) {
+    btn.addEventListener('click', function() { closeModal(btn.dataset.close); });
+  });
+  document.querySelectorAll('.modal-overlay').forEach(function(ov) {
+    ov.addEventListener('click', function(e) { if (e.target === ov) closeModal(ov.id); });
+  });
+  document.querySelectorAll('.sb-link[data-panel]').forEach(function(link) {
+    link.addEventListener('click', function() {
+      document.querySelectorAll('.sb-link[data-panel]').forEach(function(l) { l.classList.remove('active'); });
+      link.classList.add('active');
+      document.querySelectorAll('.content-panel').forEach(function(p) { p.classList.remove('active'); });
+      document.getElementById(link.dataset.panel).classList.add('active');
+      document.getElementById('topbarTitle').textContent = panelTitles[link.dataset.panel];
+      document.getElementById('sidebar').classList.remove('open');
+    });
+  });
+  document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+  var btnMoreMenu = document.getElementById('btnMoreMenu');
+  if (btnMoreMenu) {
+    btnMoreMenu.addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+  }
+
+  var dashboardInited = false;
+  function initDashboard() {
+    if (dashboardInited) return;
+    dashboardInited = true;
+    loadOrders();
+    loadExpenses();
+    loadFinanceSummary();
+    loadContentSettings();
+    loadPopups();
+    loadProducts();
+    loadCategories();
+    loadPromoCodes();
+    subscribeRealtimeOrders();
+    initPushNotifications();
+  }
+
+  /* ================= WEB PUSH NOTIFICATIONS ================= */
+  var VAPID_PUBLIC_KEY = 'BCxp4WHyG-h6pZ0H9976JJeCZ6_0PvvhPPiq8sG6yBiuMfNJs5eEnZ4FJfhnbdbxf0QPW6aKnn9Ui6Igd5DlFIw';
+
+  function urlBase64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    var rawData = atob(base64);
+    var outputArray = new Uint8Array(rawData.length);
+    for (var i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+  }
+
+  var btnEnablePush = document.getElementById('btnEnablePush');
+  var btnInstallApp = document.getElementById('btnInstallApp');
+  if (btnInstallApp) {
+    btnInstallApp.addEventListener('click', async function () {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      btnInstallApp.style.display = 'none';
+    });
+  }
+
+  async function initPushNotifications() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      btnEnablePush.style.display = 'none';
+      return;
+    }
+    try {
+      var reg = await navigator.serviceWorker.register('sw-push.js');
+      var existingSub = await reg.pushManager.getSubscription();
+      updatePushButtonState(!!existingSub);
+    } catch (e) { console.warn('Service worker gagal didaftarkan', e); }
+  }
+
+  function updatePushButtonState(isSubscribed) {
+    if (isSubscribed) {
+      btnEnablePush.innerHTML = '<i class="fas fa-bell-slash"></i> Matikan Notifikasi';
+      btnEnablePush.style.borderColor = 'var(--success)';
+      btnEnablePush.style.color = 'var(--success)';
+    } else {
+      btnEnablePush.innerHTML = '<i class="fas fa-bell"></i> Aktifkan Notifikasi';
+      btnEnablePush.style.borderColor = 'var(--blue)';
+      btnEnablePush.style.color = 'var(--blue)';
+    }
+  }
+
+  btnEnablePush.addEventListener('click', async function() {
+    btnEnablePush.disabled = true;
+    try {
+      var reg = await navigator.serviceWorker.ready;
+      var existingSub = await reg.pushManager.getSubscription();
+
+      if (existingSub) {
+        // Matikan notifikasi
+        await sb.from('push_subscriptions').delete().eq('endpoint', existingSub.endpoint);
+        await existingSub.unsubscribe();
+        updatePushButtonState(false);
+        toast('Notifikasi dimatikan', 'Anda tidak akan menerima push notification lagi di perangkat ini.', 'fas fa-bell-slash');
+        return;
+      }
+
+      var permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        toast('Izin ditolak', 'Aktifkan izin notifikasi di pengaturan browser untuk memakai fitur ini.', 'fas fa-triangle-exclamation');
+        return;
+      }
+
+      var sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+
+      var subJson = sub.toJSON();
+      var res = await sb.from('push_subscriptions').upsert({
+        endpoint: subJson.endpoint,
+        p256dh: subJson.keys.p256dh,
+        auth: subJson.keys.auth
+      }, { onConflict: 'endpoint' });
+
+      if (res.error) throw res.error;
+
+      updatePushButtonState(true);
+      toast('Notifikasi diaktifkan!', 'Anda akan dapat notifikasi walau tab ini tidak dibuka.', 'fas fa-check');
+    } catch (e) {
+      toast('Gagal Mengaktifkan', e.message || String(e), 'fas fa-xmark');
+    } finally {
+      btnEnablePush.disabled = false;
+    }
+  });
+
+  /* ================= ORDERS ================= */
+  var allOrders = [];
+
+  function statusChipHtml(status) {
+    var s = (status || 'Pending').toLowerCase();
+    if (s === 'paid' || s === 'settlement') return '<span class="status-chip paid"><i class="fas fa-check"></i> Paid</span>';
+    if (s === 'expired' || s === 'cancel') return '<span class="status-chip expired"><i class="fas fa-xmark"></i> Expired</span>';
+    return '<span class="status-chip pending"><i class="fas fa-clock"></i> Pending</span>';
+  }
+
+  function renderOrdersList(list) {
+    var host = document.getElementById('ordersList');
+    if (list.length === 0) {
+      host.innerHTML = '<div class="empty-note"><i class="fas fa-inbox"></i>Belum ada pesanan masuk.</div>';
+      return;
+    }
+    host.innerHTML = list.slice(0, 60).map(function(o) {
+      var date = new Date(o.created_at).toLocaleString('id-ID', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+      return '<div class="order-row-item" data-id="' + o.id + '" style="cursor:pointer;">' +
+        '<div class="order-icon"><i class="fas fa-receipt"></i></div>' +
+        '<div class="order-info">' +
+          '<div class="order-title">' + escHtml(o.product_name) + ' &middot; ' + escHtml(o.package_name || '-') + '</div>' +
+          '<div class="order-meta"><i class="fas fa-phone"></i> ' + escHtml(o.customer_whatsapp || '-') + ' &nbsp;&middot;&nbsp; ' + date + '</div>' +
+        '</div>' +
+        '<div class="order-right"><div class="order-amount">' + fmt(o.total_payment || o.total_amount) + '</div>' + statusChipHtml(o.status) + '</div>' +
+      '</div>';
+    }).join('');
+    host.querySelectorAll('.order-row-item').forEach(function(row) {
+      row.addEventListener('click', function() { openOrderDetail(row.dataset.id); });
+    });
+  }
+
+  function renderOrders() {
+    renderOrdersList(allOrders);
+
+    var pendingCount = allOrders.filter(function(o) { return (o.status || '').toLowerCase() === 'pending'; }).length;
+    document.getElementById('statPendingCount').textContent = pendingCount;
+    var badge = document.getElementById('pendingBadge');
+    var badgeBn = document.getElementById('pendingBadgeBn');
+    if (pendingCount > 0) {
+      badge.style.display = 'inline-block'; badge.textContent = pendingCount;
+      if (badgeBn) { badgeBn.style.display = 'flex'; badgeBn.textContent = pendingCount; }
+    } else {
+      badge.style.display = 'none';
+      if (badgeBn) badgeBn.style.display = 'none';
+    }
+
+    var todayStr = new Date().toDateString();
+    var paidToday = allOrders.filter(function(o) { return (o.status||'').toLowerCase()==='paid' && new Date(o.paid_at || o.created_at).toDateString() === todayStr; });
+    document.getElementById('statPaidToday').textContent = paidToday.length;
+    var revenueToday = paidToday.reduce(function(sum, o) { return sum + Number(o.total_payment || o.total_amount || 0); }, 0);
+    document.getElementById('statRevenueToday').textContent = fmt(revenueToday);
+  }
+
+  async function loadOrders() {
+    try {
+      var res = await sb.from('orders').select('*').order('created_at', { ascending: false }).limit(100);
+      if (res.error) throw res.error;
+      allOrders = res.data || [];
+      renderOrders();
+    } catch (e) {
+      document.getElementById('ordersList').innerHTML = '<div class="empty-note"><i class="fas fa-triangle-exclamation"></i>Gagal memuat pesanan. Coba refresh.</div>';
+    }
+  }
+  document.getElementById('btnRefreshOrders').addEventListener('click', loadOrders);
+
+  document.getElementById('orderSearchBox').addEventListener('input', filterOrders);
+  document.getElementById('orderStatusFilter').addEventListener('change', filterOrders);
+  function filterOrders() {
+    var q = document.getElementById('orderSearchBox').value.toLowerCase();
+    var statusFilter = document.getElementById('orderStatusFilter').value;
+    var filtered = allOrders.filter(function(o) {
+      var matchQ = !q || (o.order_id || '').toLowerCase().includes(q) || (o.product_name || '').toLowerCase().includes(q);
+      var matchStatus = !statusFilter || (o.status || '').toLowerCase() === statusFilter;
+      return matchQ && matchStatus;
+    });
+    renderOrdersList(filtered);
+  }
+
+  function openOrderDetail(orderId) {
+    var o = allOrders.find(function(x) { return x.id === orderId; });
+    if (!o) return;
+    var acc = o.account_data ? JSON.stringify(o.account_data, null, 2) : '-';
+    document.getElementById('orderDetailBody').innerHTML =
+      '<div class="modal-grid">' +
+      '<div class="mfield full"><label>Order ID</label><input type="text" readonly value="' + escHtml(o.order_id) + '"></div>' +
+      '<div class="mfield"><label>Produk</label><input type="text" readonly value="' + escHtml(o.product_name) + '"></div>' +
+      '<div class="mfield"><label>Paket</label><input type="text" readonly value="' + escHtml(o.package_name || '-') + '"></div>' +
+      '<div class="mfield"><label>Jumlah</label><input type="text" readonly value="' + (o.quantity || 1) + 'x"></div>' +
+      '<div class="mfield"><label>Total</label><input type="text" readonly value="' + fmt(o.total_payment || o.total_amount) + '"></div>' +
+      '<div class="mfield"><label>No. WhatsApp</label><input type="text" readonly value="' + escHtml(o.customer_whatsapp || '-') + '"></div>' +
+      '<div class="mfield"><label>Status</label><input type="text" readonly value="' + escHtml(o.status) + '"></div>' +
+      '<div class="mfield"><label>Waktu Order</label><input type="text" readonly value="' + new Date(o.created_at).toLocaleString('id-ID') + '"></div>' +
+      '<div class="mfield full"><label>Data Akun / Catatan</label><textarea readonly rows="4" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums;font-size:.76rem;">' + escHtml(acc) + '</textarea></div>' +
+      '</div>';
+    openModal('orderDetailModal');
+  }
+
+  function subscribeRealtimeOrders() {
+    sb.channel('orders-admin-feed')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, function(payload) {
+        allOrders.unshift(payload.new);
+        renderOrders();
+        flashNewOrder(payload.new.id);
+        toast('Pesanan Baru Masuk!', (payload.new.product_name || '') + ' - ' + fmt(payload.new.total_amount), 'fas fa-bell');
+        playNotifSound();
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, function(payload) {
+        var idx = allOrders.findIndex(function(o) { return o.id === payload.new.id; });
+        if (idx > -1) allOrders[idx] = payload.new; else allOrders.unshift(payload.new);
+        renderOrders();
+        if ((payload.new.status || '').toLowerCase() === 'paid') {
+          flashNewOrder(payload.new.id);
+          toast('Pembayaran Diterima!', (payload.new.product_name || '') + ' - ' + fmt(payload.new.total_payment || payload.new.total_amount), 'fas fa-circle-check');
+          playNotifSound();
+          loadFinanceSummary();
+        }
+      })
+      .subscribe();
+  }
+
+  function flashNewOrder(id) {
+    setTimeout(function() {
+      var el = document.querySelector('.order-row-item[data-id="' + id + '"]');
+      if (el) el.classList.add('new-flash');
+    }, 100);
+  }
+
+  function playNotifSound() {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = ctx.createOscillator(); var g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880; g.gain.value = 0.08;
+      o.start(); setTimeout(function() { o.stop(); }, 180);
+    } catch (e) {}
+  }
+
+  /* ================= FINANCE ================= */
+  async function loadFinanceSummary() {
+    try {
+      var res = await sb.from('orders').select('total_payment, total_amount, paid_at, status').eq('status', 'Paid');
+      if (res.error) throw res.error;
+      var paidOrders = res.data || [];
+
+      var now = new Date();
+      var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      var startOfWeek = new Date(startOfDay); startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay());
+      var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      var startOfYear = new Date(now.getFullYear(), 0, 1);
+
+      function sumSince(dateFrom) {
+        return paidOrders.filter(function(o) { return o.paid_at && new Date(o.paid_at) >= dateFrom; })
+          .reduce(function(s, o) { return s + Number(o.total_payment || o.total_amount || 0); }, 0);
+      }
+
+      var incToday = sumSince(startOfDay), incWeek = sumSince(startOfWeek), incMonth = sumSince(startOfMonth), incYear = sumSince(startOfYear);
+      document.getElementById('incToday').textContent = fmt(incToday);
+      document.getElementById('incWeek').textContent = fmt(incWeek);
+      document.getElementById('incMonth').textContent = fmt(incMonth);
+      document.getElementById('incYear').textContent = fmt(incYear);
+      document.getElementById('sumIncomeMonth').textContent = fmt(incMonth);
+
+      var expRes = await sb.from('expenses').select('amount, expense_date');
+      var expenses = (expRes.data || []);
+      var expenseMonth = expenses.filter(function(e) { return new Date(e.expense_date) >= startOfMonth; })
+        .reduce(function(s, e) { return s + Number(e.amount || 0); }, 0);
+      document.getElementById('sumExpenseMonth').textContent = fmt(expenseMonth);
+
+      var profit = incMonth - expenseMonth;
+      var profitEl = document.getElementById('sumProfitMonth');
+      profitEl.textContent = fmt(profit);
+      profitEl.style.color = profit >= 0 ? 'var(--success)' : 'var(--error)';
+    } catch (e) { console.warn('Gagal load ringkasan keuangan', e); }
+  }
+
+  var allExpenses = [];
+  async function loadExpenses() {
+    try {
+      var res = await sb.from('expenses').select('*').order('expense_date', { ascending: false }).limit(50);
+      if (res.error) throw res.error;
+      allExpenses = res.data || [];
+      renderExpenses();
+    } catch (e) {
+      document.getElementById('expenseList').innerHTML = '<div class="empty-note"><i class="fas fa-triangle-exclamation"></i>Gagal memuat pengeluaran.</div>';
+    }
+  }
+  function renderExpenses() {
+    var host = document.getElementById('expenseList');
+    if (allExpenses.length === 0) { host.innerHTML = '<div class="empty-note"><i class="fas fa-receipt"></i>Belum ada catatan pengeluaran.</div>'; return; }
+    host.innerHTML = allExpenses.map(function(e) {
+      var d = new Date(e.expense_date).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+      return '<div class="expense-item"><div class="expense-cat"><i class="fas fa-tag"></i></div>' +
+        '<div class="expense-info"><div class="expense-desc">' + escHtml(e.description) + '</div><div class="expense-meta">' + escHtml(e.category) + ' &middot; ' + d + '</div></div>' +
+        '<div class="expense-amount">-' + fmt(e.amount) + '</div>' +
+        '<button class="del-btn" data-id="' + e.id + '"><i class="fas fa-trash"></i></button></div>';
+    }).join('');
+    host.querySelectorAll('.del-btn').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        if (!confirm('Hapus catatan pengeluaran ini?')) return;
+        await sb.from('expenses').delete().eq('id', btn.dataset.id);
+        loadExpenses(); loadFinanceSummary();
+      });
+    });
+  }
+
+  document.getElementById('btnAddExpense').addEventListener('click', async function() {
+    var desc = document.getElementById('expDesc').value.trim();
+    var cat = document.getElementById('expCategory').value;
+    var amount = parseFloat(document.getElementById('expAmount').value);
+    if (!desc || !amount || amount <= 0) { toast('Data belum lengkap', 'Isi deskripsi dan jumlah dengan benar.', 'fas fa-triangle-exclamation'); return; }
+    try {
+      await sb.from('expenses').insert({ description: desc, category: cat, amount: amount });
+      document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = '';
+      toast('Pengeluaran dicatat', desc + ' - ' + fmt(amount), 'fas fa-check');
+      loadExpenses(); loadFinanceSummary();
+    } catch (e) { toast('Gagal menyimpan', 'Coba lagi ya.', 'fas fa-xmark'); }
+  });
+
+  /* ================= CONTENT: LOGO & BANNER ================= */
+  async function loadContentSettings() {
+    try {
+      var res = await sb.from('site_settings').select('*');
+      var settings = {};
+      (res.data || []).forEach(function(row) { settings[row.key] = row.value; });
+
+      if (settings.logo_url) { document.getElementById('settingLogoUrl').value = settings.logo_url; showPreview('logoPreview', settings.logo_url); }
+      [1,2,3].forEach(function(n) {
+        var val = settings['carousel_banner_' + n];
+        if (val) { document.getElementById('banner' + n).value = val; showPreview('banner' + n + 'Preview', val); }
+      });
+    } catch (e) { console.warn(e); }
+  }
+  function showPreview(id, url) { var el = document.getElementById(id); el.src = url; el.style.display = 'block'; }
+
+  document.getElementById('btnSaveLogo').addEventListener('click', async function() {
+    var url = document.getElementById('settingLogoUrl').value.trim();
+    if (!url) return;
+    await sb.from('site_settings').upsert({ key: 'logo_url', value: url });
+    showPreview('logoPreview', url);
+    toast('Logo diperbarui', 'Perubahan langsung berlaku di homepage.', 'fas fa-check');
+  });
+
+  document.getElementById('btnSaveBanners').addEventListener('click', async function() {
+    var updates = [1,2,3].map(function(n) {
+      var val = document.getElementById('banner' + n).value.trim();
+      if (val) showPreview('banner' + n + 'Preview', val);
+      return { key: 'carousel_banner_' + n, value: val };
+    }).filter(function(u) { return u.value; });
+    if (updates.length === 0) return;
+    await sb.from('site_settings').upsert(updates);
+    toast('Banner diperbarui', 'Carousel homepage sudah diupdate.', 'fas fa-check');
+  });
+
+  /* ================= CONTENT: POPUP ================= */
+  var allPopups = [];
+  async function loadPopups() {
+    try {
+      var res = await sb.from('site_popups').select('*').order('created_at', { ascending: false });
+      allPopups = res.data || [];
+      renderPopups();
+    } catch (e) {
+      document.getElementById('popupList').innerHTML = '<div class="empty-note"><i class="fas fa-triangle-exclamation"></i>Gagal memuat popup.</div>';
+    }
+  }
+  function renderPopups() {
+    var host = document.getElementById('popupList');
+    if (allPopups.length === 0) { host.innerHTML = '<div class="empty-note"><i class="fas fa-bullhorn"></i>Belum ada popup. Klik "Popup Baru" untuk buat.</div>'; return; }
+    host.innerHTML = allPopups.map(function(p) {
+      return '<div class="popup-item" data-id="' + p.id + '">' +
+        '<div class="popup-item-head"><span class="name">' + escHtml(p.title || '(Tanpa judul)') + '</span>' +
+          '<label class="toggle-switch"><input type="checkbox" class="popup-active-toggle" data-id="' + p.id + '" ' + (p.is_active ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>' +
+        '<div class="content-field"><label>Judul</label><input type="text" class="pop-field" data-field="title" value="' + escHtml(p.title) + '"></div>' +
+        '<div class="content-field"><label>Pesan</label><input type="text" class="pop-field" data-field="message" value="' + escHtml(p.message) + '"></div>' +
+        '<div class="content-field"><label>URL Gambar (opsional)</label><input type="text" class="pop-field" data-field="image_url" value="' + escHtml(p.image_url || '') + '"></div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+          '<div class="content-field"><label>Teks Tombol</label><input type="text" class="pop-field" data-field="button_text" value="' + escHtml(p.button_text || '') + '"></div>' +
+          '<div class="content-field"><label>URL Tombol</label><input type="text" class="pop-field" data-field="button_url" value="' + escHtml(p.button_url || '') + '"></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;margin-top:10px;">' +
+          '<button class="finance-tab-btn save-popup-btn" data-id="' + p.id + '"><i class="fas fa-save"></i> Simpan</button>' +
+          '<button class="finance-tab-btn del-popup-btn" data-id="' + p.id + '" style="color:var(--error);border-color:var(--error);"><i class="fas fa-trash"></i> Hapus</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    host.querySelectorAll('.popup-active-toggle').forEach(function(t) {
+      t.addEventListener('change', async function() {
+        await sb.from('site_popups').update({ is_active: t.checked }).eq('id', t.dataset.id);
+        toast('Popup diperbarui', t.checked ? 'Popup diaktifkan.' : 'Popup dinonaktifkan.', 'fas fa-check');
+      });
+    });
+    host.querySelectorAll('.save-popup-btn').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        var item = host.querySelector('.popup-item[data-id="' + btn.dataset.id + '"]');
+        var updateData = {};
+        item.querySelectorAll('.pop-field').forEach(function(f) { updateData[f.dataset.field] = f.value; });
+        await sb.from('site_popups').update(updateData).eq('id', btn.dataset.id);
+        toast('Popup disimpan', 'Perubahan berhasil disimpan.', 'fas fa-check');
+        loadPopups();
+      });
+    });
+    host.querySelectorAll('.del-popup-btn').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        if (!confirm('Hapus popup ini?')) return;
+        await sb.from('site_popups').delete().eq('id', btn.dataset.id);
+        loadPopups();
+      });
+    });
+  }
+
+  document.getElementById('btnNewPopup').addEventListener('click', async function() {
+    await sb.from('site_popups').insert({
+      title: 'Popup Baru', message: 'Tulis pesan promo di sini.', popup_type: 'announcement',
+      position: 'center', show_on_page: 'all', delay_seconds: 3, bg_color: '#0033FF',
+      is_active: false, is_closeable: true, show_once_per_session: false
+    });
+    toast('Popup dibuat', 'Silakan edit isinya di bawah.', 'fas fa-plus');
+    loadPopups();
+  });
+
+  /* ================= PRODUCTS ================= */
+  var allProducts = [];
+  async function loadProducts() {
+    try {
+      var res = await sb.from('products').select('*').order('name', { ascending: true });
+      allProducts = res.data || [];
+      renderProducts(allProducts);
+      if (allCategories.length) renderCategories();
+    } catch (e) {
+      document.getElementById('productsList').innerHTML = '<div class="empty-note"><i class="fas fa-triangle-exclamation"></i>Gagal memuat produk.</div>';
+    }
+  }
+  function renderProducts(list) {
+    var host = document.getElementById('productsList');
+    if (list.length === 0) { host.innerHTML = '<div class="empty-note"><i class="fas fa-box-open"></i>Produk tidak ditemukan.</div>'; return; }
+    host.innerHTML = list.map(function(p) {
+      return '<div class="product-row" data-id="' + p.id + '" style="grid-template-columns:50px 1.5fr 1fr 1fr 1fr auto auto auto;">' +
+        '<img src="' + (p.image_url || '') + '" onerror="this.style.opacity=0.2">' +
+        '<div><div class="col-label">Nama & Gambar</div><input type="text" class="pf" data-field="name" value="' + escHtml(p.name) + '" style="font-weight:700;margin-bottom:4px;"><input type="text" class="pf" data-field="image_url" value="' + escHtml(p.image_url || '') + '" placeholder="URL gambar"></div>' +
+        '<div><div class="col-label">Harga</div><input type="number" class="pf" data-field="base_price" value="' + (p.base_price || 0) + '"></div>' +
+        '<div><div class="col-label">Harga Coret</div><input type="number" class="pf" data-field="original_price" value="' + (p.original_price || 0) + '"></div>' +
+        '<div><div class="col-label">Stok</div><input type="number" class="pf" data-field="stock" value="' + (p.stock || 0) + '"></div>' +
+        '<button class="save-row-btn" data-id="' + p.id + '" title="Simpan Cepat"><i class="fas fa-save"></i></button>' +
+        '<button class="icon-btn edit-prod-btn" data-id="' + p.id + '" title="Edit Lengkap (paket & field)"><i class="fas fa-pen"></i></button>' +
+        '<button class="icon-btn danger del-prod-btn" data-id="' + p.id + '" title="Hapus Produk"><i class="fas fa-trash"></i></button>' +
+      '</div>';
+    }).join('');
+
+    host.querySelectorAll('.edit-prod-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { editProduct(btn.dataset.id); });
+    });
+    host.querySelectorAll('.del-prod-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var p = allProducts.find(function(x) { return x.id === btn.dataset.id; });
+        deleteProduct(btn.dataset.id, p ? p.name : '');
+      });
+    });
+
+    host.querySelectorAll('.save-row-btn').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        var row = host.querySelector('.product-row[data-id="' + btn.dataset.id + '"]');
+        var updateData = {};
+        row.querySelectorAll('.pf').forEach(function(f) {
+          var val = f.value;
+          if (f.dataset.field === 'base_price' || f.dataset.field === 'original_price' || f.dataset.field === 'stock') val = parseInt(val) || 0;
+          updateData[f.dataset.field] = val;
+        });
+        btn.innerHTML = '<span class="spinner-sm" style="margin:0;"></span>';
+        try {
+          await sb.from('products').update(updateData).eq('id', btn.dataset.id);
+          toast('Produk disimpan', updateData.name + ' berhasil diupdate.', 'fas fa-check');
+        } catch (e) {
+          toast('Gagal menyimpan', 'Coba lagi ya.', 'fas fa-xmark');
+        }
+        btn.innerHTML = '<i class="fas fa-save"></i>';
+      });
+    });
+  }
+  document.getElementById('productSearchBox').addEventListener('input', function(e) {
+    var q = e.target.value.toLowerCase();
+    renderProducts(allProducts.filter(function(p) { return (p.name || '').toLowerCase().includes(q); }));
+  });
+
+  /* ================= CATEGORIES ================= */
+  var allCategories = [];
+  async function loadCategories() {
+    try {
+      var res = await sb.from('categories').select('*').order('id', { ascending: true });
+      allCategories = res.data || [];
+      renderCategories();
+      populateCategorySelect();
+    } catch (e) {
+      document.getElementById('categoriesList').innerHTML = '<div class="empty-note"><i class="fas fa-triangle-exclamation"></i>Gagal memuat kategori.</div>';
+    }
+  }
+  function renderCategories() {
+    var host = document.getElementById('categoriesList');
+    if (allCategories.length === 0) { host.innerHTML = '<div class="empty-note"><i class="fas fa-folder-open"></i>Belum ada kategori.</div>'; return; }
+    host.innerHTML = allCategories.map(function(c) {
+      var count = allProducts.filter(function(p) { return p.category_id === c.id; }).length;
+      return '<div class="cat-item"><div class="cat-icon"><i class="fas fa-folder"></i></div>' +
+        '<div class="cat-info"><div class="cat-name">' + escHtml(c.name) + '</div><div class="cat-meta">' + count + ' produk</div></div>' +
+        '<div class="row-actions">' +
+          '<button class="icon-btn edit-cat-btn" data-id="' + c.id + '"><i class="fas fa-pen"></i></button>' +
+          '<button class="icon-btn danger del-cat-btn" data-id="' + c.id + '"><i class="fas fa-trash"></i></button>' +
+        '</div></div>';
+    }).join('');
+    host.querySelectorAll('.edit-cat-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var c = allCategories.find(function(x) { return String(x.id) === btn.dataset.id; });
+        document.getElementById('categoryModalTitle').textContent = 'Edit Kategori';
+        document.getElementById('cmId').value = c.id;
+        document.getElementById('cmName').value = c.name;
+        openModal('categoryModal');
+      });
+    });
+    host.querySelectorAll('.del-cat-btn').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        if (!confirm('Hapus kategori ini? Produk yang terhubung tidak akan terhapus.')) return;
+        await sb.from('categories').delete().eq('id', btn.dataset.id);
+        toast('Kategori dihapus', '', 'fas fa-check');
+        loadCategories();
+      });
+    });
+  }
+  function populateCategorySelect() {
+    var sel = document.getElementById('pmCategory');
+    sel.innerHTML = '<option value="">- Tanpa Kategori -</option>' + allCategories.map(function(c) { return '<option value="' + c.id + '">' + escHtml(c.name) + '</option>'; }).join('');
+  }
+  document.getElementById('btnAddCategory').addEventListener('click', function() {
+    document.getElementById('categoryModalTitle').textContent = 'Tambah Kategori';
+    document.getElementById('cmId').value = ''; document.getElementById('cmName').value = '';
+    openModal('categoryModal');
+  });
+  document.getElementById('cmSave').addEventListener('click', async function() {
+    var id = document.getElementById('cmId').value;
+    var name = document.getElementById('cmName').value.trim();
+    if (!name) { toast('Nama wajib diisi', '', 'fas fa-triangle-exclamation'); return; }
+    try {
+      if (id) await sb.from('categories').update({ name: name }).eq('id', id);
+      else await sb.from('categories').insert({ name: name });
+      toast('Kategori disimpan', name, 'fas fa-check');
+      closeModal('categoryModal');
+      loadCategories();
+    } catch (e) { toast('Gagal menyimpan', '', 'fas fa-xmark'); }
+  });
+
+  /* ================= PROMO CODES ================= */
+  var allPromos = [];
+  async function loadPromoCodes() {
+    try {
+      var res = await sb.from('promo_codes').select('*').order('created_at', { ascending: false });
+      allPromos = res.data || [];
+      renderPromos();
+    } catch (e) {
+      document.getElementById('promoList').innerHTML = '<div class="empty-note"><i class="fas fa-triangle-exclamation"></i>Gagal memuat kode promo.</div>';
+    }
+  }
+  function renderPromos() {
+    var host = document.getElementById('promoList');
+    if (allPromos.length === 0) { host.innerHTML = '<div class="empty-note"><i class="fas fa-ticket"></i>Belum ada kode promo.</div>'; return; }
+    host.innerHTML = allPromos.map(function(p) {
+      var val = p.discount_type === 'percentage' ? p.discount_value + '%' : fmt(p.discount_value);
+      var usage = (p.used_count || 0) + (p.max_usage ? ' / ' + p.max_usage : ' / ∞');
+      return '<div class="promo-item"><div class="promo-code-tag">' + escHtml(p.code) + '</div>' +
+        '<div class="cat-info"><div class="cat-name">' + val + ' &middot; min. ' + fmt(p.min_order_amount || 0) + '</div><div class="cat-meta">Dipakai ' + usage + ' kali &middot; ' + (p.is_active ? '<span style="color:var(--success)">Aktif</span>' : '<span style="color:var(--error)">Nonaktif</span>') + '</div></div>' +
+        '<div class="row-actions">' +
+          '<button class="icon-btn edit-promo-btn" data-id="' + p.id + '"><i class="fas fa-pen"></i></button>' +
+          '<button class="icon-btn danger del-promo-btn" data-id="' + p.id + '"><i class="fas fa-trash"></i></button>' +
+        '</div></div>';
+    }).join('');
+    host.querySelectorAll('.edit-promo-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var p = allPromos.find(function(x) { return x.id === btn.dataset.id; });
+        document.getElementById('promoModalTitle').textContent = 'Edit Kode Promo';
+        document.getElementById('prmId').value = p.id;
+        document.getElementById('prmCode').value = p.code;
+        document.getElementById('prmType').value = p.discount_type;
+        document.getElementById('prmValue').value = p.discount_value;
+        document.getElementById('prmMaxDisc').value = p.max_discount_amount || '';
+        document.getElementById('prmMinOrder').value = p.min_order_amount || 0;
+        document.getElementById('prmMaxUse').value = p.max_usage || '';
+        document.getElementById('prmStart').value = p.valid_from ? p.valid_from.slice(0,16) : '';
+        document.getElementById('prmEnd').value = p.valid_until ? p.valid_until.slice(0,16) : '';
+        document.getElementById('prmDesc').value = p.description || '';
+        document.getElementById('prmActive').checked = !!p.is_active;
+        openModal('promoModal');
+      });
+    });
+    host.querySelectorAll('.del-promo-btn').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        if (!confirm('Hapus kode promo ini?')) return;
+        await sb.from('promo_codes').delete().eq('id', btn.dataset.id);
+        toast('Kode promo dihapus', '', 'fas fa-check');
+        loadPromoCodes();
+      });
+    });
+  }
+  document.getElementById('btnAddPromo').addEventListener('click', function() {
+    document.getElementById('promoModalTitle').textContent = 'Buat Kode Promo';
+    ['prmId','prmCode','prmValue','prmMaxDisc','prmMinOrder','prmMaxUse','prmStart','prmEnd','prmDesc'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.getElementById('prmType').value = 'percentage';
+    document.getElementById('prmActive').checked = true;
+    openModal('promoModal');
+  });
+  document.getElementById('prmSave').addEventListener('click', async function() {
+    var id = document.getElementById('prmId').value;
+    var code = document.getElementById('prmCode').value.trim().toUpperCase();
+    var value = parseFloat(document.getElementById('prmValue').value);
+    if (!code || !value) { toast('Kode dan nilai diskon wajib diisi', '', 'fas fa-triangle-exclamation'); return; }
+    var payload = {
+      code: code,
+      discount_type: document.getElementById('prmType').value,
+      discount_value: value,
+      max_discount_amount: parseFloat(document.getElementById('prmMaxDisc').value) || null,
+      min_order_amount: parseFloat(document.getElementById('prmMinOrder').value) || 0,
+      max_usage: parseInt(document.getElementById('prmMaxUse').value) || null,
+      valid_from: document.getElementById('prmStart').value ? new Date(document.getElementById('prmStart').value).toISOString() : null,
+      valid_until: document.getElementById('prmEnd').value ? new Date(document.getElementById('prmEnd').value).toISOString() : null,
+      description: document.getElementById('prmDesc').value.trim() || null,
+      is_active: document.getElementById('prmActive').checked
+    };
+    try {
+      if (id) await sb.from('promo_codes').update(payload).eq('id', id);
+      else await sb.from('promo_codes').insert(payload);
+      toast('Kode promo disimpan', code, 'fas fa-check');
+      closeModal('promoModal');
+      loadPromoCodes();
+    } catch (e) { toast('Gagal menyimpan', e.message || '', 'fas fa-xmark'); }
+  });
+
+  /* ================= PRODUCT: TAMBAH / HAPUS + PAKET & INPUT ================= */
+  var pkgCounter = 0, inpCounter = 0;
+
+  function pkgRowHtml(pkg) {
+    pkgCounter++;
+    var uid = 'pkg' + pkgCounter;
+    return '<div class="sub-list-item" id="' + uid + '">' +
+      '<input type="text" placeholder="Nama paket" class="pkg-name" value="' + escHtml(pkg ? pkg.name : '') + '">' +
+      '<input type="number" placeholder="Harga" class="pkg-price" style="max-width:110px;" value="' + (pkg ? pkg.price : '') + '">' +
+      '<input type="text" placeholder="Durasi" class="pkg-dur" style="max-width:100px;" value="' + escHtml(pkg ? pkg.duration : '') + '">' +
+      '<button class="rm-sub-btn" onclick="document.getElementById(\'' + uid + '\').remove()"><i class="fas fa-times"></i></button>' +
+    '</div>';
+  }
+  function inpRowHtml(inp) {
+    inpCounter++;
+    var uid = 'inp' + inpCounter;
+    return '<div class="sub-list-item" id="' + uid + '">' +
+      '<input type="text" placeholder="Label (mis. Nomor WA)" class="inp-label" value="' + escHtml(inp ? inp.label : '') + '">' +
+      '<select class="inp-type" style="max-width:110px;padding:8px;border:1.5px solid var(--gray);border-radius:8px;">' +
+        '<option value="text"' + (inp && inp.type==='text' ? ' selected' : '') + '>Text</option>' +
+        '<option value="email"' + (inp && inp.type==='email' ? ' selected' : '') + '>Email</option>' +
+      '</select>' +
+      '<button class="rm-sub-btn" onclick="document.getElementById(\'' + uid + '\').remove()"><i class="fas fa-times"></i></button>' +
+    '</div>';
+  }
+  document.getElementById('pmAddPkg').addEventListener('click', function() { document.getElementById('pmPkgList').insertAdjacentHTML('beforeend', pkgRowHtml()); });
+  document.getElementById('pmAddInp').addEventListener('click', function() { document.getElementById('pmInpList').insertAdjacentHTML('beforeend', inpRowHtml()); });
+
+  document.getElementById('btnAddProduct').addEventListener('click', function() {
+    document.getElementById('productModalTitle').textContent = 'Tambah Produk';
+    ['pmId','pmName','pmSlug','pmImage','pmPrice','pmOriginal','pmDiscount','pmStock','pmDesc'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.getElementById('pmCategory').value = '';
+    document.getElementById('pmPopular').checked = false;
+    document.getElementById('pmFlash').checked = false;
+    document.getElementById('pmPkgList').innerHTML = '';
+    document.getElementById('pmInpList').innerHTML = '';
+    document.getElementById('pmPkgList').insertAdjacentHTML('beforeend', pkgRowHtml());
+    document.getElementById('pmInpList').insertAdjacentHTML('beforeend', inpRowHtml({ type: 'text', label: 'Nomor WhatsApp' }));
+    openModal('productModal');
+  });
+
+  async function editProduct(id) {
+    var p = allProducts.find(function(x) { return x.id === id; });
+    if (!p) return;
+    document.getElementById('productModalTitle').textContent = 'Edit Produk';
+    document.getElementById('pmId').value = p.id;
+    document.getElementById('pmName').value = p.name;
+    document.getElementById('pmSlug').value = p.slug;
+    document.getElementById('pmCategory').value = p.category_id || '';
+    document.getElementById('pmImage').value = p.image_url || '';
+    document.getElementById('pmPrice').value = p.base_price || '';
+    document.getElementById('pmOriginal').value = p.original_price || '';
+    document.getElementById('pmDiscount').value = p.discount_percentage || '';
+    document.getElementById('pmStock').value = p.stock || '';
+    document.getElementById('pmDesc').value = p.description || '';
+    document.getElementById('pmPopular').checked = !!p.is_popular;
+    document.getElementById('pmFlash').checked = !!p.is_flash_sale;
+
+    var pkgRes = await sb.from('product_packages').select('*').eq('product_id', id);
+    var inpRes = await sb.from('product_inputs').select('*').eq('product_id', id);
+    document.getElementById('pmPkgList').innerHTML = (pkgRes.data || []).map(pkgRowHtml).join('') || pkgRowHtml();
+    document.getElementById('pmInpList').innerHTML = (inpRes.data || []).map(inpRowHtml).join('') || inpRowHtml({ type: 'text', label: 'Nomor WhatsApp' });
+    openModal('productModal');
+  }
+
+  document.getElementById('pmSave').addEventListener('click', async function() {
+    var id = document.getElementById('pmId').value;
+    var name = document.getElementById('pmName').value.trim();
+    var slug = document.getElementById('pmSlug').value.trim();
+    if (!name || !slug) { toast('Nama dan slug wajib diisi', '', 'fas fa-triangle-exclamation'); return; }
+
+    var payload = {
+      name: name, slug: slug,
+      category_id: document.getElementById('pmCategory').value || null,
+      image_url: document.getElementById('pmImage').value.trim() || null,
+      base_price: parseInt(document.getElementById('pmPrice').value) || 0,
+      original_price: parseInt(document.getElementById('pmOriginal').value) || 0,
+      discount_percentage: parseInt(document.getElementById('pmDiscount').value) || 0,
+      stock: parseInt(document.getElementById('pmStock').value) || 0,
+      description: document.getElementById('pmDesc').value.trim() || null,
+      is_popular: document.getElementById('pmPopular').checked,
+      is_flash_sale: document.getElementById('pmFlash').checked
+    };
+
+    var btn = document.getElementById('pmSave');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-sm"></span> Menyimpan...';
+
+    try {
+      var productId = id;
+      if (id) {
+        await sb.from('products').update(payload).eq('id', id);
+        await sb.from('product_packages').delete().eq('product_id', id);
+        await sb.from('product_inputs').delete().eq('product_id', id);
+      } else {
+        var insertRes = await sb.from('products').insert(payload).select().single();
+        if (insertRes.error) throw insertRes.error;
+        productId = insertRes.data.id;
+      }
+
+      var pkgRows = [];
+      document.querySelectorAll('#pmPkgList .sub-list-item').forEach(function(row) {
+        var pname = row.querySelector('.pkg-name').value.trim();
+        var pprice = parseInt(row.querySelector('.pkg-price').value) || 0;
+        var pdur = row.querySelector('.pkg-dur').value.trim();
+        if (pname) pkgRows.push({ product_id: productId, name: pname, price: pprice, duration: pdur || '1 BULAN' });
+      });
+      if (pkgRows.length) await sb.from('product_packages').insert(pkgRows);
+
+      var inpRows = [];
+      document.querySelectorAll('#pmInpList .sub-list-item').forEach(function(row) {
+        var ilabel = row.querySelector('.inp-label').value.trim();
+        var itype = row.querySelector('.inp-type').value;
+        if (ilabel) inpRows.push({ product_id: productId, type: itype, name: itype === 'email' ? 'email' : 'whatsapp', label: ilabel, placeholder: 'Masukkan ' + ilabel.toLowerCase(), is_required: true });
+      });
+      if (inpRows.length) await sb.from('product_inputs').insert(inpRows);
+
+      toast('Produk disimpan', name, 'fas fa-check');
+      closeModal('productModal');
+      loadProducts();
+    } catch (e) {
+      toast('Gagal menyimpan produk', e.message || '', 'fas fa-xmark');
+    } finally {
+      btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan Produk';
+    }
+  });
+
+  async function deleteProduct(id, name) {
+    if (!confirm('Hapus produk "' + name + '"? Paket & field terkait juga akan terhapus.')) return;
+    try {
+      await sb.from('product_packages').delete().eq('product_id', id);
+      await sb.from('product_inputs').delete().eq('product_id', id);
+      await sb.from('products').delete().eq('id', id);
+      toast('Produk dihapus', name, 'fas fa-check');
+      loadProducts();
+    } catch (e) { toast('Gagal menghapus', e.message || '', 'fas fa-xmark'); }
+  }
+
+</script>
+</body>
+</html>

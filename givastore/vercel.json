@@ -1,0 +1,25 @@
+{
+  "rewrites": [
+    { "source": "/pay", "destination": "/pay.html" },
+    { "source": "/product/:slug", "destination": "/api/product-page?slug=:slug" },
+    { "source": "/product/:slug/", "destination": "/api/product-page?slug=:slug" }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+    },
+    {
+      "source": "/video/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000" }]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}

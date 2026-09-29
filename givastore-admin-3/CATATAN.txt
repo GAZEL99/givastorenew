@@ -1,0 +1,85 @@
+CARA DEPLOY ADMIN PANEL SEBAGAI SITUS TERPISAH (beda domain dari GivaStore)
+=============================================================================
+
+Kenapa dipisah: kalau digabung satu Vercel project sama storefront, admin
+panel ikut numpang di domain yang sama (givastorenew.vercel.app/admin.html).
+Dengan cara ini, admin panel jadi project & domain SENDIRI, terpisah total
+dari situs utama - jadi walau ada masalah di storefront publik, admin panel
+gak ikut kena, dan sebaliknya.
+
+LANGKAH 1 - Bikin repo GitHub baru (JANGAN pakai repo givastorenew yang lama)
+------------------------------------------------------------------------------
+1. Buka github.com -> New repository -> kasih nama misal "givastore-admin"
+   -> Private (WAJIB private, biar orang lain gak bisa lihat source code admin)
+2. Di terminal Alpine kamu:
+
+   mkdir ~/givastore-admin
+   cd ~/givastore-admin
+   git init
+   git branch -M main
+   git remote add origin https://github.com/USERNAME_KAMU/givastore-admin.git
+
+3. Extract isi zip ini LANGSUNG ke folder ~/givastore-admin (bukan di dalam
+   subfolder). Hasil akhirnya harus kayak gini:
+
+   ~/givastore-admin/
+     index.html
+     sw-push.js
+     manifest.json
+     robots.txt
+     package.json
+     vercel.json
+     api/send-push.js
+     icons/icon-192.png
+     icons/icon-512.png
+     icons/icon-maskable-512.png
+
+4. Commit & push:
+   git add .
+   git commit -m "Setup admin panel terpisah"
+   git push -u origin main
+
+LANGKAH 2 - Bikin project Vercel BARU (terpisah dari project givastorenew)
+------------------------------------------------------------------------------
+1. Buka vercel.com -> Add New... -> Project
+2. Import repo "givastore-admin" (BUKAN givastorenew)
+3. Biarkan default (Framework: Other), klik Deploy
+4. Setelah selesai, kamu dapat domain baru, misal:
+   givastore-admin.vercel.app
+   (beda total dari givastorenew.vercel.app milik storefront)
+
+LANGKAH 3 - Set Environment Variables di project BARU ini
+------------------------------------------------------------------------------
+Vercel -> project givastore-admin -> Settings -> Environment Variables:
+
+   VAPID_PUBLIC_KEY=BCxp4WHyG-h6pZ0H9976JJeCZ6_0PvvhPPiq8sG6yBiuMfNJs5eEnZ4FJfhnbdbxf0QPW6aKnn9Ui6Igd5DlFIw
+   VAPID_PRIVATE_KEY=d0rndwCvcFUKZDl9SCBUCoeXAoe7HFZjyxS_lkbZXSM
+   VAPID_SUBJECT=mailto:xyzopedia@gmail.com
+   PUSH_WEBHOOK_SECRET=11ORBrMCpwExoNad4r4f-_caEpOQiw7Y
+   SUPABASE_SERVICE_ROLE_KEY=(dari Supabase Dashboard -> Project Settings -> API -> service_role)
+
+Lalu klik Redeploy.
+
+LANGKAH 4 - Update webhook Supabase (kalau sebelumnya sempat diarahkan ke domain lama)
+------------------------------------------------------------------------------
+Supabase Dashboard -> Database -> Webhooks -> edit/buat webhook:
+   - Table: orders
+   - Events: Insert + Update
+   - URL: https://givastore-admin.vercel.app/api/send-push   <- domain BARU
+   - Header: x-webhook-secret = 11ORBrMCpwExoNad4r4f-_caEpOQiw7Y
+
+LANGKAH 5 - Amankan lebih lanjut (opsional tapi disarankan)
+------------------------------------------------------------------------------
+- Data (Supabase project & tabel orders) TETAP SAMA seperti storefront - yang
+  dipisah cuma tempat HOSTING/domain admin panelnya. Login admin tetap pakai
+  Supabase Auth yang sudah ada di index.html (email+password), itu tetap jadi
+  garis pertahanan utama - pastikan password akun admin kuat & jangan dibagi.
+- Kalau mau makin aman, aktifkan "Vercel Authentication" / Password Protection
+  di Settings project (fitur bawaan Vercel, kalau tersedia di paket kamu) -
+  supaya sebelum sampai ke halaman login pun, orang luar udah diminta password.
+
+TESTING
+------------------------------------------------------------------------------
+Buka https://givastore-admin.vercel.app di HP -> Login -> "Aktifkan Notifikasi"
+-> "Install App". Coba ubah status order jadi "paid" langsung dari Supabase
+Table Editor buat mastiin notif tetap masuk walau app admin ditutup.

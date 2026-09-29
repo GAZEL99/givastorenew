@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hubungi Admin CS GivaStore via WhatsApp, Instagram, atau Telegram untuk bantuan order dan info produk.">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Kontak Kami &middot; GivaStore</title>
+  <link rel="icon" href="image/logo.jpg" type="image/jpeg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ============================================================
+       GivaStore — satu sistem desain untuk semua halaman
+       Editorial gelap, judul Archivo Black kapital, kartu putih polos,
+       tombol utama putih, aksen hijau HANYA untuk aksi WhatsApp.
+       Blok dasar, navbar, footer, dan tab bar identik dengan index.html.
+       ============================================================ */
+    :root {
+      --font-display: 'Archivo Black', 'Public Sans', Arial, sans-serif;
+      --font-body: 'Public Sans', Arial, 'Helvetica Neue', sans-serif;
+
+      --bg: #0a0a0a;
+      --bg-raised: #151516;
+      --paper: #ffffff;
+
+      --ink: #f7f7f5;
+      --ink-dim: #9b9ba3;
+      --ink-faint: #5a5a62;
+
+      --line: rgba(255,255,255,0.12);
+      --line-strong: rgba(255,255,255,0.3);
+
+      --wa: #25d366;
+      --wa-ink: #06210f;
+
+      --radius-s: 8px;
+      --radius: 18px;
+      --ease: cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--ink);
+      font-family: var(--font-body); font-size: 0.95rem; line-height: 1.6;
+      min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection { background: var(--ink); color: var(--bg); }
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--ink); outline-offset: 2px;
+    }
+    img { max-width: 100%; display: block; }
+    h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.01em; text-transform: uppercase; }
+
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+    /* ===== Kotak berlabel — motif tombol sekunder berulang di seluruh situs ===== */
+    .boxlink {
+      display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; text-decoration: none; color: var(--ink); flex-shrink: 0;
+      border: 1.5px solid var(--line-strong); padding: 11px 14px; min-width: 74px;
+      font-family: var(--font-display); font-weight: 400; font-size: 0.66rem;
+      letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.35;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    .boxlink:hover { background: var(--ink); color: var(--bg); }
+
+    .btn {
+      font-family: var(--font-body); font-size: 0.86rem; font-weight: 700;
+      background: var(--ink); color: var(--bg); border: 1px solid var(--ink); cursor: pointer;
+      padding: 13px 20px; border-radius: var(--radius-s); display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      text-decoration: none; white-space: nowrap; transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    .btn:hover { background: transparent; color: var(--ink); }
+    .btn-wa { background: var(--wa); border-color: var(--wa); color: var(--wa-ink); }
+    .btn-wa:hover { background: transparent; color: var(--wa); }
+    .btn-outline {
+      font-size: 0.85rem; font-weight: 600; background: transparent; color: var(--ink);
+      border: 1px solid var(--line-strong); border-radius: var(--radius-s); cursor: pointer;
+      padding: 11px 19px; display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
+      transition: border-color 0.15s ease;
+    }
+    .btn-outline:hover { border-color: var(--ink); }
+    .btn-s { padding: 8px 13px; font-size: 0.78rem; }
+
+    /* ===== Nav ===== */
+    .navbar { position: sticky; top: 0; z-index: 1000; background: var(--bg); }
+    .nav-inner { max-width: 1120px; margin: 0 auto; padding: 0 18px; height: 66px; display: flex; align-items: center; gap: 14px; }
+    .nav-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); flex-shrink: 0; }
+    /* Logo GivaStore = dua video: huruf "G" (.brand-mark) + tulisan GIVASTORE (.brand-text).
+       Keduanya dipotong lewat CSS agar hanya bagian logonya yang tampil. Kalau video diganti,
+       cukup sesuaikan angka --logo-* di bawah. mix-blend-mode: screen membuat latar hitam video
+       menyatu dengan latar halaman. */
+    .nav-brand { gap: 4px; }
+    .brand-mark, .brand-text { position: relative; display: block; flex-shrink: 0; overflow: hidden; }
+    .brand-mark video, .brand-text video {
+      position: absolute; display: block; max-width: none; height: auto; pointer-events: none;
+      width: calc(var(--frame-w) / var(--logo-w) * 100%);
+      left: calc(var(--logo-x) / var(--logo-w) * -100%);
+      top: calc(var(--logo-y) / var(--logo-h) * -100%);
+      mix-blend-mode: screen;
+    }
+    .brand-mark {
+      --frame-w: 480; --logo-w: 225; --logo-h: 256; --logo-x: 124; --logo-y: 104;
+      height: clamp(20px, 6vw, 24px); aspect-ratio: var(--logo-w) / var(--logo-h);
+    }
+    .brand-text {
+      --frame-w: 802; --logo-w: 768; --logo-h: 88; --logo-x: 33; --logo-y: 193;
+      height: clamp(16px, 5.5vw, 22px); aspect-ratio: var(--logo-w) / var(--logo-h);
+    }
+
+    .nav-links { display: none; list-style: none; gap: 2px; margin-left: 24px; }
+    .nav-links a {
+      font-size: 0.83rem; font-weight: 600; text-decoration: none; color: var(--ink-dim);
+      padding: 8px 12px; border-radius: var(--radius-s); transition: color 0.15s ease;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+    @media (min-width: 900px) { .nav-links { display: flex; } }
+
+    .nav-actions { display: flex; align-items: center; gap: 18px; margin-left: auto; }
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; cursor: pointer;
+      background: transparent; border: none; color: var(--ink); font-size: 1.05rem;
+    }
+    .menu-btn { display: inline-flex; }
+    @media (min-width: 900px) { .menu-btn { display: none; } }
+
+    /* Drawer */
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 998; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+    .drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 999; width: min(300px, 85vw);
+      background: var(--bg-raised); padding: 20px 18px; transform: translateX(105%); transition: transform 0.3s var(--ease);
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer .drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .drawer .drawer-head .lbl { font-family: var(--font-display); font-size: 0.62rem; letter-spacing: 0.08em; color: var(--ink-faint); }
+    .drawer a {
+      font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; text-decoration: none; color: var(--ink);
+      padding: 15px 4px; border-bottom: 1px solid var(--line); text-transform: uppercase;
+    }
+    .drawer a:hover { color: var(--ink-dim); }
+
+    /* ===== CTA ===== */
+    .cta { border-top: 1px solid var(--line); padding: 48px 0 56px; text-align: left; }
+    .cta h3 { font-weight: 400; font-size: clamp(1.9rem, 7vw, 2.6rem); line-height: 1; max-width: 640px; }
+    .cta p { color: var(--ink-dim); font-size: 0.92rem; max-width: 460px; margin: 18px 0 26px; text-transform: none; font-family: var(--font-body); }
+    .cta .cta-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ===== Footer ===== */
+    .footer { background: var(--bg-raised); }
+    .footer-inner { max-width: 1120px; margin: 0 auto; padding: 44px 20px 22px; display: grid; grid-template-columns: 1.3fr 0.8fr 1fr; gap: 34px; content-visibility: auto; contain-intrinsic-size: 0 400px; }
+    @media (max-width: 768px) { .footer-inner { grid-template-columns: 1fr; gap: 28px; } }
+    .footer .brand { display: flex; align-items: center; gap: 4px; }
+    .footer .brand-mark { height: 24px; }
+    .footer .brand-text { height: 22px; }
+    .footer-desc { font-size: 0.82rem; color: var(--ink-dim); line-height: 1.65; max-width: 300px; margin: 14px 0 18px; }
+    .footer-social { display: flex; gap: 8px; flex-wrap: wrap; }
+    .footer h5 { font-family: var(--font-display); font-weight: 400; font-size: 0.68rem; letter-spacing: 0.04em; color: var(--ink-faint); margin-bottom: 14px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a { color: var(--ink-dim); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.15s ease; }
+    .footer-links a:hover { color: var(--ink); }
+    .pay-desc { font-size: 0.8rem; color: var(--ink-dim); line-height: 1.6; margin-bottom: 12px; }
+    .pay-icons { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pay-icons span { font-size: 0.6rem; font-weight: 700; color: var(--ink-dim); border: 1px solid var(--line); padding: 4px 9px; border-radius: 5px; }
+    .footer-bot { max-width: 1120px; margin: 0 auto; padding: 16px 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.04em; color: var(--ink-faint); }
+
+    /* ===== Tombol mengambang — WA kanan, scroll-top kiri (seperti referensi) ===== */
+    .float-wa {
+      position: fixed; bottom: 20px; right: 16px; z-index: 999;
+      width: 54px; height: 54px; border-radius: 50%;
+      background: var(--wa); color: var(--wa-ink); font-size: 1.4rem; text-decoration: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s ease;
+    }
+    .float-wa:hover { transform: translateY(-2px); }
+
+    .scroll-top {
+      position: fixed; bottom: 20px; left: 16px; z-index: 998;
+      width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+      background: #000; border: 1px solid var(--line-strong); color: var(--ink); font-size: 0.78rem;
+      opacity: 0; visibility: hidden; transform: translateY(8px);
+      transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .scroll-top.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 99px;
+      font-size: 0.76rem; font-weight: 700; letter-spacing: 0.01em;
+      opacity: 0; pointer-events: none; transition: transform 0.25s var(--ease), opacity 0.2s ease; z-index: 2000;
+      display: flex; align-items: center; gap: 9px; max-width: calc(100vw - 40px);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* ===== Halaman sekunder — kepala judul + dua kolom ===== */
+    :root { --danger: #ff6b6b; }
+    body { transition: opacity 0.2s ease-out; }
+    body.page-leaving { opacity: 0; }
+    summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+    .page-grid { display: grid; gap: 30px; padding: 34px 0 44px; }
+    .page-head h1 { font-size: clamp(2.2rem, 9.5vw, 3.5rem); line-height: 0.96; overflow-wrap: break-word; }
+    .page-head p { color: var(--ink-dim); font-size: 0.92rem; max-width: 420px; margin-top: 16px; }
+    @media (min-width: 900px) {
+      .page-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 72px; padding: 64px 0 80px; align-items: start; }
+      .page-head { position: sticky; top: 98px; }
+    }
+    .sec-title { font-size: clamp(1.5rem, 5.5vw, 2rem); line-height: 1; margin: 52px 0 10px; }
+    .body-text { color: var(--ink-dim); font-size: 0.92rem; line-height: 1.75; max-width: 60ch; }
+    .body-text strong { color: var(--ink); }
+    .body-text a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .page-body .cta { border-top: none; padding: 44px 0 0; }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+    .btn-outline .fa-whatsapp { color: var(--wa); }
+
+    /* Saluran kontak — baris bergaris, kotak ikon memakai motif .boxlink */
+    .contact-list { border-top: 1px solid var(--line); }
+    .contact-row { display: flex; align-items: center; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); }
+    .contact-row .ic { width: 48px; height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--line-strong); font-size: 1.2rem; transition: background-color 0.15s ease, color 0.15s ease; }
+    .contact-row.wa .ic { color: var(--wa); }
+    .contact-row:hover .ic { background: var(--ink); color: var(--bg); }
+    .contact-row .t { font-weight: 700; font-size: 0.96rem; line-height: 1.3; }
+    .contact-row .d { color: var(--ink-dim); font-size: 0.84rem; margin-top: 2px; }
+    .contact-row .go { margin-left: auto; color: var(--ink-faint); font-size: 0.8rem; transition: color 0.15s ease; }
+    .contact-row:hover .go { color: var(--ink); }
+
+    .hours-status { display: inline-flex; align-items: center; gap: 9px; font-size: 0.84rem; font-weight: 600; color: var(--ink-dim); margin-bottom: 14px; }
+    .hours-status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink); flex-shrink: 0; }
+    .hours { border-top: 1px solid var(--line); }
+    .hours-row { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 0.88rem; }
+    .hours-row .day { color: var(--ink-dim); }
+    .hours-row .time { font-weight: 700; text-align: right; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Buka menu" aria-expanded="false"><i class="fas fa-bars" id="menuIcon"></i></button>
+      <a href="index.html" class="nav-brand" aria-label="GivaStore, ke beranda">
+        <span class="brand-mark"><video src="video/givastore-logo.mp4" poster="video/givastore-logo-poster.jpg" data-still="3.8" autoplay muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video></span>
+        <span class="brand-text"><video src="video/givastore-text.mp4" poster="video/givastore-text-poster.jpg" data-still="2.5" autoplay muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html#katalog">Produk</a></li>
+        <li><a href="cara-order.html">Cara Order</a></li>
+        <li><a href="lacak-pesanan.html">Lacak Pesanan</a></li>
+        <li><a href="testimoni.html">Testimoni</a></li>
+        <li><a href="kontak.html" class="active" aria-current="page">Kontak</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a class="icon-btn" href="index.html#searchSection" aria-label="Cari produk" title="Cari produk"><i class="fas fa-magnifying-glass"></i></a>
+        <a class="icon-btn" href="lacak-pesanan.html" aria-label="Pesanan saya" title="Lacak pesanan saya"><i class="fas fa-bag-shopping"></i></a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="drawer" id="drawer" aria-label="Menu navigasi">
+    <div class="drawer-head"><span class="lbl">Menu</span><button class="icon-btn" onclick="toggleDrawer()" aria-label="Tutup menu"><i class="fas fa-xmark"></i></button></div>
+    <a href="index.html#katalog">Produk</a>
+    <a href="cara-order.html">Cara Order</a>
+    <a href="lacak-pesanan.html">Lacak Pesanan</a>
+    <a href="testimoni.html">Testimoni</a>
+    <a href="kontak.html">Kontak</a>
+  </aside>
+
+
+  <main class="wrap">
+    <div class="page-grid">
+      <header class="page-head">
+        <h1>Hubungi Admin CS Kami</h1>
+        <p>Ada pertanyaan seputar produk, pesanan, atau kendala akun? Langsung chat aja, responnya cepat.</p>
+      </header>
+
+      <div class="page-body">
+        <div class="contact-list">
+          <a href="https://wa.me/6285181869816" target="_blank" rel="noopener" class="contact-row wa">
+            <span class="ic"><i class="fab fa-whatsapp"></i></span>
+            <span><div class="t">WhatsApp Admin CS</div><div class="d">+62 851-8186-9816 &middot; Paling cepat direspon</div></span>
+            <i class="fas fa-arrow-right go"></i>
+          </a>
+          <a href="https://instagram.com/morastore.id" target="_blank" rel="noopener" class="contact-row">
+            <span class="ic"><i class="fab fa-instagram"></i></span>
+            <span><div class="t">Instagram</div><div class="d">@morastore.id &middot; Info promo &amp; update produk</div></span>
+            <i class="fas fa-arrow-right go"></i>
+          </a>
+          <a href="https://t.me/morastoreid" target="_blank" rel="noopener" class="contact-row">
+            <span class="ic"><i class="fab fa-telegram"></i></span>
+            <span><div class="t">Telegram</div><div class="d">@morastoreid &middot; Channel notifikasi &amp; bantuan</div></span>
+            <i class="fas fa-arrow-right go"></i>
+          </a>
+        </div>
+
+        <h2 class="sec-title">Jam Operasional CS</h2>
+        <div class="hours-status"><span class="dot"></span>Admin online sekarang</div>
+        <div class="hours">
+          <div class="hours-row"><span class="day">Senin &ndash; Jumat</span><span class="time">08.00 &ndash; 22.00 WIB</span></div>
+          <div class="hours-row"><span class="day">Sabtu &ndash; Minggu</span><span class="time">09.00 &ndash; 21.00 WIB</span></div>
+          <div class="hours-row"><span class="day">Di luar jam operasional</span><span class="time">Tetap bisa order, diproses besok</span></div>
+        </div>
+
+        <h2 class="sec-title">Sebelum Chat Admin</h2>
+        <p class="body-text">Supaya lebih cepat diproses, siapkan dulu: <strong>nama produk</strong> yang mau ditanyakan/dibeli, dan kalau sudah order, sertakan <strong>ID Pesanan</strong>. Bisa juga cek sendiri statusnya di halaman <a href="lacak-pesanan.html">Lacak Pesanan</a>.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="brand">
+          <span class="brand-mark"><video src="video/givastore-logo.mp4" poster="video/givastore-logo-poster.jpg" data-still="3.8" autoplay muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video></span>
+          <span class="brand-text"><video src="video/givastore-text.mp4" poster="video/givastore-text-poster.jpg" data-still="2.5" autoplay muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video></span>
+        </div>
+        <p class="footer-desc">Penyedia lisensi dan akun aplikasi premium legal, amanah, dan terpercaya di Indonesia.</p>
+        <div class="footer-social">
+          <a href="https://wa.me/6285181869816" target="_blank" rel="noopener" class="btn-outline btn-s"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+          <a href="https://instagram.com/morastore.id" target="_blank" rel="noopener" class="btn-outline btn-s"><i class="fab fa-instagram"></i> Instagram</a>
+        </div>
+      </div>
+      <div>
+        <h5>Navigasi</h5>
+        <ul class="footer-links">
+          <li><a href="index.html#katalog">Semua Produk</a></li>
+          <li><a href="cara-order.html">Cara Order</a></li>
+          <li><a href="lacak-pesanan.html">Lacak Pesanan</a></li>
+          <li><a href="testimoni.html">Testimoni</a></li>
+          <li><a href="kontak.html">Kontak CS</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Pembayaran</h5>
+        <p class="pay-desc">QRIS &amp; transfer bank, diproses otomatis dan aman.</p>
+        <div class="pay-icons">
+          <span>BCA</span><span>MANDIRI</span><span>BRI</span><span>BNI</span>
+          <span>QRIS</span><span>DANA</span><span>OVO</span><span>GOPAY</span>
+          <span>SHOPEEPAY</span><span>LINKAJA</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bot">
+      <span>&copy; <span id="currentYear"></span> GivaStore</span>
+      <span>Kualitas Premium &middot; Transaksi Aman</span>
+    </div>
+  </footer>
+
+
+  <button class="scroll-top" id="scrollTopBtn" aria-label="Kembali ke atas"><i class="fas fa-arrow-up"></i></button>
+
+  <a href="https://wa.me/6285181869816?text=Halo%20Admin%20GivaStore,%20saya%20tertarik%20dengan%20produk%20digital%20Anda." target="_blank" rel="noopener" class="float-wa" title="Chat CS Admin" aria-label="Chat CS Admin via WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+
+  <script>
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    /* ===== Logo video ===== */
+    function initBrandVideo() {
+      try {
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.querySelectorAll('.brand-mark video, .brand-text video').forEach(function (v) {
+          v.removeAttribute('loop');
+          if (reduce) {
+            v.removeAttribute('autoplay');
+            v.pause();
+            var showFrame = function () { v.currentTime = parseFloat(v.getAttribute('data-still')) || 0; };
+            if (v.readyState >= 1) showFrame();
+            else v.addEventListener('loadedmetadata', showFrame, { once: true });
+          } else {
+            // Main lalu berhenti di frame terakhir, lalu putar ulang dari awal tiap 20 detik
+            v.addEventListener('ended', function () { v.pause(); });
+            var p = v.play();
+            if (p && p.catch) p.catch(function () {});
+            setInterval(function () {
+              v.currentTime = 0;
+              var p2 = v.play();
+              if (p2 && p2.catch) p2.catch(function () {});
+            }, 20000);
+          }
+        });
+      } catch (e) { /* logo video tidak boleh mengganggu fungsi halaman */ }
+    }
+    initBrandVideo();
+
+    /* ===== Drawer ===== */
+    var drawer = document.getElementById('drawer');
+    var drawerOverlay = document.getElementById('drawerOverlay');
+    var menuBtn = document.getElementById('menuBtn');
+    function toggleDrawer() {
+      var open = drawer.classList.toggle('open');
+      drawerOverlay.classList.toggle('open', open);
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', String(open));
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+    if (menuBtn) menuBtn.addEventListener('click', toggleDrawer);
+    if (drawerOverlay) drawerOverlay.addEventListener('click', toggleDrawer);
+
+    /* ===== Scroll-to-top ===== */
+    var scrollTopBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', function () {
+      if (scrollTopBtn) scrollTopBtn.classList.toggle('visible', window.scrollY > 500);
+    }, { passive: true });
+    if (scrollTopBtn) scrollTopBtn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+    /* ===== Transisi keluar halaman ===== */
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('a[href]').forEach(function (a) {
+        var href = a.getAttribute('href');
+        if (!href || href.indexOf('javascript:') === 0 || href.indexOf('http') === 0 || href.charAt(0) === '#' || a.target === '_blank') return;
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.body.classList.add('page-leaving');
+          setTimeout(function () { window.location.href = href; }, 180);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

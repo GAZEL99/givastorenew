@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  GANTI "https://GANTI-DOMAIN-KAMU.com" DI BAWAH DENGAN DOMAIN ASLI GIVASTORE KAMU
+  (bisa pakai Find & Replace di editor teks apa saja, ganti semua sekaligus).
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://GANTI-DOMAIN-KAMU.com/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://GANTI-DOMAIN-KAMU.com/cara-order.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://GANTI-DOMAIN-KAMU.com/kontak.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://GANTI-DOMAIN-KAMU.com/testimoni.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://GANTI-DOMAIN-KAMU.com/lacak-pesanan.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- 22 halaman produk -->
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/netflix/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/disneyplus/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/youtube/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/amazon-prime/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/iqiyi/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/dramabox/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/loklok/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/viu/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/wetv/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/bstation/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/youkou/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/crunchyroll/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/canva/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/capcut/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/meitu/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/picsart/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/alight-motion/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/chatgpt/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/duolingo/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/spotify/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/wink/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://GANTI-DOMAIN-KAMU.com/product/applemusic/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+</urlset>
