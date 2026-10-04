@@ -384,7 +384,7 @@ fun NativeFullDashboard(
     url: String,
     key: String
 ) {
-    var selectedNav by remember { mutableStateOf(0) }
+    var selectedNav by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
     val currencyFmt = remember { NumberFormat.getCurrencyInstance(Locale("in", "ID")) }
 
@@ -675,7 +675,7 @@ fun NativeFullDashboard(
                                     .padding(3.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                TimePeriod.values().forEach { period ->
+                                TimePeriod.entries.forEach { period ->
                                     val isSelected = selectedOrderPeriod == period
                                     Box(
                                         modifier = Modifier
@@ -821,7 +821,7 @@ fun NativeFullDashboard(
                             .padding(3.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        TimePeriod.values().forEach { period ->
+                        TimePeriod.entries.forEach { period ->
                             val isSel = selectedFinPeriod == period
                             Box(
                                 modifier = Modifier
