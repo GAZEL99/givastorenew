@@ -110,3 +110,21 @@ git remote add origin https://github.com/GAZEL99/givastorenew.git
 git push -f origin main
 cd givastorenew
 pwd
+cd givastore-admin-android
+git remote add origin https://github.com/GAZEL99/GIVAHEAD.git
+git push -u origin main
+# 1. Masukkan semua file dan folder ke Git
+git add -A
+# 2. Buat commit perubahan
+git commit -m "feat: tambah file proyek android native dan github workflow"
+# 3. Upload (push) langsung ke GitHub
+git push origin main
+# 1. Pindahkan file dari subfolder ke root
+mv givastore-admin-android/* .
+mv givastore-admin-android/.* . 2>/dev/null || true
+rm -rf givastore-admin-android
+# 2. Simpan perubahan ke Git
+git add -A
+git commit -m "fix: pindahkan struktur proyek ke root repository"
+# 3. Kirim ke GitHub
+git push origin main
