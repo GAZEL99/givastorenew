@@ -2,9 +2,9 @@ package com.givastore.admin
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.background
@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,10 +33,8 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
 import java.util.*
 
-// Model Data Utama
 data class OrderItem(
     val id: String,
     val invoice: String,
@@ -46,13 +46,6 @@ data class OrderItem(
     val createdAt: String
 )
 
-data class FinanceSummary(
-    val todayRevenue: Long = 0,
-    val weekRevenue: Long = 0,
-    val monthRevenue: Long = 0,
-    val yearRevenue: Long = 0
-)
-
 data class ProductItem(
     val id: String,
     val name: String,
@@ -62,8 +55,21 @@ data class ProductItem(
     val isReady: Boolean
 )
 
-class MainActivity : FragmentActivity() {
+data class ExpenseItem(
+    val id: String,
+    val description: String,
+    val category: String,
+    val amount: Long,
+    val createdAt: String
+)
 
+class MyFirebaseMessagingService : FirebaseMessagingService() {
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        super.onMessageReceived(remoteMessage)
+    }
+}
+
+class MainActivity : FragmentActivity() {
     private val supabaseUrl = "https://givastore.biz.id/api"
     private val supabaseKey = "PUBLIC-ANON-KEY-GIVASTORE"
 
@@ -72,8 +78,8 @@ class MainActivity : FragmentActivity() {
         setContent {
             MaterialTheme(
                 colorScheme = darkColorScheme(
-                    background = Color(0xFF0F0F0F),
-                    surface = Color(0xFF1E1E1E),
+                    background = Color(0xFF0A0A0A),
+                    surface = Color(0xFF161616),
                     primary = Color.White,
                     onPrimary = Color.Black,
                     onSurface = Color.White
@@ -84,7 +90,7 @@ class MainActivity : FragmentActivity() {
         }
     }
 
-    suspend fun fetchOrdersFromSupabase(): List<OrderItem> = withContext(Dispatchers.IO) {
+    suspend fun fetchOrders(): List<OrderItem> = withContext(Dispatchers.IO) {
         val list = mutableListOf<OrderItem>()
         try {
             val url = URL("$supabaseUrl/rest/v1/orders?select=*&order=created_at.desc")
@@ -95,19 +101,18 @@ class MainActivity : FragmentActivity() {
                 connectTimeout = 8000
                 readTimeout = 8000
             }
-
             if (conn.responseCode == 200) {
-                val responseText = conn.inputStream.bufferedReader().use { it.readText() }
-                val jsonArr = JSONArray(responseText)
-                for (i in 0 until jsonArr.length()) {
-                    val obj = jsonArr.getJSONObject(i)
+                val res = conn.inputStream.bufferedReader().use { it.readText() }
+                val arr = JSONArray(res)
+                for (i in 0 until arr.length()) {
+                    val obj = arr.getJSONObject(i)
                     list.add(
                         OrderItem(
                             id = obj.optString("id", UUID.randomUUID().toString()),
                             invoice = obj.optString("invoice_number", "INV-${System.currentTimeMillis()}"),
-                            customerName = obj.optString("customer_name", "Pembeli"),
+                            customerName = obj.optString("customer_name", "Pelanggan"),
                             customerPhone = obj.optString("customer_phone", ""),
-                            productName = obj.optString("product_name", "Item Digital"),
+                            productName = obj.optString("product_name", "Produk"),
                             amount = obj.optLong("total_amount", obj.optLong("total_payment", 0L)),
                             status = obj.optString("status", "PAID"),
                             createdAt = obj.optString("created_at", "")
@@ -116,10 +121,10 @@ class MainActivity : FragmentActivity() {
                 }
             }
         } catch (_: Exception) {}
-        return@withContext list
+        list
     }
 
-    suspend fun fetchProductsFromSupabase(): List<ProductItem> = withContext(Dispatchers.IO) {
+    suspend fun fetchProducts(): List<ProductItem> = withContext(Dispatchers.IO) {
         val list = mutableListOf<ProductItem>()
         try {
             val url = URL("$supabaseUrl/rest/v1/products?select=*&order=name.asc")
@@ -130,12 +135,11 @@ class MainActivity : FragmentActivity() {
                 connectTimeout = 8000
                 readTimeout = 8000
             }
-
             if (conn.responseCode == 200) {
-                val responseText = conn.inputStream.bufferedReader().use { it.readText() }
-                val jsonArr = JSONArray(responseText)
-                for (i in 0 until jsonArr.length()) {
-                    val obj = jsonArr.getJSONObject(i)
+                val res = conn.inputStream.bufferedReader().use { it.readText() }
+                val arr = JSONArray(res)
+                for (i in 0 until arr.length()) {
+                    val obj = arr.getJSONObject(i)
                     list.add(
                         ProductItem(
                             id = obj.optString("id", ""),
@@ -149,8 +153,45 @@ class MainActivity : FragmentActivity() {
                 }
             }
         } catch (_: Exception) {}
-        return@withContext list
+        list
     }
+
+    suspend fun fetchExpenses(): List<ExpenseItem> = withContext(Dispatchers.IO) {
+        val list = mutableListOf<ExpenseItem>()
+        try {
+            val url = URL("$supabaseUrl/rest/v1/expenses?select=*&order=created_at.desc")
+            val conn = (url.openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                setRequestProperty("apikey", supabaseKey)
+                setRequestProperty("Authorization", "Bearer $supabaseKey")
+                connectTimeout = 8000
+                readTimeout = 8000
+            }
+            if (conn.responseCode == 200) {
+                val res = conn.inputStream.bufferedReader().use { it.readText() }
+                val arr = JSONArray(res)
+                for (i in 0 until arr.length()) {
+                    val obj = arr.getJSONObject(i)
+                    list.add(
+                        ExpenseItem(
+                            id = obj.optString("id", ""),
+                            description = obj.optString("description", "Operasional"),
+                            category = obj.optString("category", "Umum"),
+                            amount = obj.optLong("amount", 0L),
+                            createdAt = obj.optString("created_at", "")
+                        )
+                    )
+                }
+            }
+        } catch (_: Exception) {}
+        list
+    }
+}
+
+fun formatRupiah(amount: Long): String {
+    val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+    format.maximumFractionDigits = 0
+    return format.format(amount).replace("Rp", "Rp ")
 }
 
 @Composable
@@ -158,14 +199,16 @@ fun GivaAdminMainScreen(activity: MainActivity) {
     var selectedTab by remember { mutableIntStateOf(0) }
     var orders by remember { mutableStateOf<List<OrderItem>>(emptyList()) }
     var products by remember { mutableStateOf<List<ProductItem>>(emptyList()) }
+    var expenses by remember { mutableStateOf<List<ExpenseItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     fun refreshAll() {
         scope.launch {
             isLoading = true
-            orders = activity.fetchOrdersFromSupabase()
-            products = activity.fetchProductsFromSupabase()
+            orders = activity.fetchOrders()
+            products = activity.fetchProducts()
+            expenses = activity.fetchExpenses()
             isLoading = false
         }
     }
@@ -181,51 +224,51 @@ fun GivaAdminMainScreen(activity: MainActivity) {
                 NavigationBarItem(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    label = { Text("Pesanan", fontSize = 11.sp) },
-                    icon = { Text("📦", fontSize = 18.sp) },
+                    label = { Text("Pesanan", fontSize = 10.sp) },
+                    icon = { Text("📦", fontSize = 16.sp) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
-                        indicatorColor = Color(0xFF2C2C2C)
+                        indicatorColor = Color(0xFF2B2B2B)
                     )
                 )
                 NavigationBarItem(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    label = { Text("Keuangan", fontSize = 11.sp) },
-                    icon = { Text("💳", fontSize = 18.sp) },
+                    label = { Text("Keuangan", fontSize = 10.sp) },
+                    icon = { Text("💳", fontSize = 16.sp) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
-                        indicatorColor = Color(0xFF2C2C2C)
+                        indicatorColor = Color(0xFF2B2B2B)
                     )
                 )
                 NavigationBarItem(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
-                    label = { Text("Produk", fontSize = 11.sp) },
-                    icon = { Text("🏷️", fontSize = 18.sp) },
+                    label = { Text("Produk", fontSize = 10.sp) },
+                    icon = { Text("🏷️", fontSize = 16.sp) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
-                        indicatorColor = Color(0xFF2C2C2C)
+                        indicatorColor = Color(0xFF2B2B2B)
                     )
                 )
                 NavigationBarItem(
                     selected = selectedTab == 3,
                     onClick = { selectedTab = 3 },
-                    label = { Text("Konten", fontSize = 11.sp) },
-                    icon = { Text("🎨", fontSize = 18.sp) },
+                    label = { Text("Konten", fontSize = 10.sp) },
+                    icon = { Text("🎨", fontSize = 16.sp) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
-                        indicatorColor = Color(0xFF2C2C2C)
+                        indicatorColor = Color(0xFF2B2B2B)
                     )
                 )
                 NavigationBarItem(
                     selected = selectedTab == 4,
                     onClick = { selectedTab = 4 },
-                    label = { Text("Menu", fontSize = 11.sp) },
-                    icon = { Text("⚙️", fontSize = 18.sp) },
+                    label = { Text("Menu", fontSize = 10.sp) },
+                    icon = { Text("⚙️", fontSize = 16.sp) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
-                        indicatorColor = Color(0xFF2C2C2C)
+                        indicatorColor = Color(0xFF2B2B2B)
                     )
                 )
             }
@@ -234,7 +277,7 @@ fun GivaAdminMainScreen(activity: MainActivity) {
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (selectedTab) {
                 0 -> OrdersScreen(orders, isLoading, onRefresh = { refreshAll() })
-                1 -> FinanceScreen(orders)
+                1 -> FinanceScreen(orders, expenses)
                 2 -> ProductsScreen(products, onRefresh = { refreshAll() })
                 3 -> ContentScreen()
                 4 -> MenuScreen()
@@ -243,19 +286,22 @@ fun GivaAdminMainScreen(activity: MainActivity) {
     }
 }
 
-fun formatRupiah(amount: Long): String {
-    val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-    format.maximumFractionDigits = 0
-    return format.format(amount).replace("Rp", "Rp ")
-}
-
 @Composable
 fun OrdersScreen(orders: List<OrderItem>, isLoading: Boolean, onRefresh: () -> Unit) {
-    var periodTab by remember { mutableIntStateOf(2) } // 0: Hari, 1: Minggu, 2: Bulan, 3: Tahun
+    var periodTab by remember { mutableIntStateOf(2) }
+    var filterStatus by remember { mutableStateOf("ALL") }
+    var searchQuery by remember { mutableStateOf("") }
     val periods = listOf("Hari Ini", "Minggu", "Bulan", "Tahun")
 
-    val totalOmzet = orders.filter { it.status.uppercase() == "PAID" || it.status.uppercase() == "LUNAS" || it.status.uppercase() == "SUCCESS" }
-        .sumOf { it.amount }
+    val filteredOrders = orders.filter { order ->
+        val matchStatus = if (filterStatus == "ALL") true else order.status.uppercase() == filterStatus
+        val matchQuery = order.invoice.contains(searchQuery, true) ||
+                order.customerName.contains(searchQuery, true) ||
+                order.productName.contains(searchQuery, true)
+        matchStatus && matchQuery
+    }
+
+    val totalOmzet = orders.filter { it.status.uppercase() in listOf("PAID", "LUNAS", "SUCCESS") }.sumOf { it.amount }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(
@@ -275,17 +321,16 @@ fun OrdersScreen(orders: List<OrderItem>, isLoading: Boolean, onRefresh: () -> U
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
-        // Card Omzet
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1C)),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF161616)),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(14.dp)) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(Color(0xFF121212), RoundedCornerShape(10.dp)).padding(4.dp),
+                    modifier = Modifier.fillMaxWidth().background(Color(0xFF0F0F0F), RoundedCornerShape(10.dp)).padding(3.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     periods.forEachIndexed { index, text ->
@@ -296,29 +341,48 @@ fun OrdersScreen(orders: List<OrderItem>, isLoading: Boolean, onRefresh: () -> U
                         ) {
                             Text(
                                 text = text,
-                                fontSize = 12.sp,
+                                fontSize = 11.sp,
                                 fontWeight = if (periodTab == index) FontWeight.Bold else FontWeight.Normal,
                                 color = if (periodTab == index) Color.Black else Color.Gray,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Total Omzet ${periods[periodTab]}", fontSize = 12.sp, color = Color.Gray)
-                Text(formatRupiah(totalOmzet), fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                Spacer(modifier = Modifier.height(14.dp))
+                Text("Total Omzet ${periods[periodTab]}", fontSize = 11.sp, color = Color.Gray)
+                Text(formatRupiah(totalOmzet), fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(14.dp))
+
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Cari invoice / pelanggan...", fontSize = 12.sp, color = Color.Gray) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFF141414),
+                unfocusedContainerColor = Color(0xFF141414),
+                focusedBorderColor = Color.White,
+                unfocusedBorderColor = Color(0xFF262626),
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White
+            )
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("PESANAN TERBARU", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("PESANAN TERBARU (${filteredOrders.size})", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Text(
                 text = if (isLoading) "Memuat..." else "🔄 Refresh",
                 color = Color.White,
@@ -327,15 +391,15 @@ fun OrdersScreen(orders: List<OrderItem>, isLoading: Boolean, onRefresh: () -> U
             )
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        if (orders.isEmpty()) {
+        if (filteredOrders.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Belum ada data pesanan.", color = Color.Gray, fontSize = 14.sp)
+                Text(if (isLoading) "Mengambil data Supabase..." else "Belum ada pesanan ditemukan.", color = Color.Gray, fontSize = 13.sp)
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(orders) { item ->
+                items(filteredOrders) { item ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF161616)),
@@ -355,7 +419,7 @@ fun OrdersScreen(orders: List<OrderItem>, isLoading: Boolean, onRefresh: () -> U
                             Text(item.productName, fontSize = 12.sp, color = Color(0xFFCCCCCC))
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text(item.customerName, fontSize = 12.sp, color = Color.Gray)
+                                Text("${item.customerName} • ${item.customerPhone}", fontSize = 11.sp, color = Color.Gray)
                                 Text(formatRupiah(item.amount), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
@@ -367,27 +431,51 @@ fun OrdersScreen(orders: List<OrderItem>, isLoading: Boolean, onRefresh: () -> U
 }
 
 @Composable
-fun FinanceScreen(orders: List<OrderItem>) {
+fun FinanceScreen(orders: List<OrderItem>, expenses: List<ExpenseItem>) {
     val totalRevenue = orders.filter { it.status.uppercase() in listOf("PAID", "LUNAS", "SUCCESS") }.sumOf { it.amount }
-    val totalExpense = 0L
+    val totalExpense = expenses.sumOf { it.amount }
     val netProfit = totalRevenue - totalExpense
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("LAPORAN KEUANGAN", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-        Text("Ringkasan Arus Kas & Margin", fontSize = 12.sp, color = Color.Gray)
+        Text("Arus Kas, Omzet & Laba Bersih", fontSize = 12.sp, color = Color.Gray)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)), shape = RoundedCornerShape(14.dp)) {
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF161616)), shape = RoundedCornerShape(14.dp)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Total Pemasukan (Omzet)", fontSize = 12.sp, color = Color.Gray)
                 Text(formatRupiah(totalRevenue), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50))
                 Spacer(modifier = Modifier.height(10.dp))
-                Text("Total Pengeluaran", fontSize = 12.sp, color = Color.Gray)
+                Text("Total Pengeluaran Operasional", fontSize = 12.sp, color = Color.Gray)
                 Text(formatRupiah(totalExpense), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE53935))
-                Divider(color = Color(0xFF333333), thickness = 1.dp, modifier = Modifier.padding(vertical = 12.dp))
+                HorizontalDivider(color = Color(0xFF2C2C2C), thickness = 1.dp, modifier = Modifier.padding(vertical = 12.dp))
                 Text("Estimasi Laba Bersih", fontSize = 12.sp, color = Color.Gray)
-                Text(formatRupiah(netProfit), fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                Text(formatRupiah(netProfit), fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("RIWAYAT PENGELUARAN (${expenses.size})", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (expenses.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Belum ada catatan pengeluaran.", color = Color.Gray, fontSize = 13.sp)
+            }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(expenses) { exp ->
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF141414)), shape = RoundedCornerShape(10.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Column {
+                                Text(exp.description, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(exp.category, fontSize = 11.sp, color = Color.Gray)
+                            }
+                            Text(formatRupiah(exp.amount), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE53935))
+                        }
+                    }
+                }
             }
         }
     }
@@ -408,7 +496,7 @@ fun ProductsScreen(products: List<ProductItem>, onRefresh: () -> Unit) {
 
         if (products.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Belum ada data produk.", color = Color.Gray, fontSize = 14.sp)
+                Text("Belum ada data produk.", color = Color.Gray, fontSize = 13.sp)
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
