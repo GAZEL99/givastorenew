@@ -9,7 +9,7 @@
        otomatis ke maintenance.html, dengan SEMUA data pesanannya ikut terbawa
        (gak ada yang hilang, gak perlu rename/swap file apapun).
        Ubah balik ke `false` + redeploy kalau sistem pembayaran udah normal lagi. */
-    var PAYMENT_MAINTENANCE_MODE = false;
+    var PAYMENT_MAINTENANCE_MODE = true;
     if (PAYMENT_MAINTENANCE_MODE) {
       location.replace('maintenance.html' + window.location.search);
     }
