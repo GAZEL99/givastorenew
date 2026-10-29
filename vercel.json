@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/pay", "destination": "/pay.html" },
+    { "source": "/maintenance", "destination": "/maintenance.html" },
     { "source": "/product/:slug", "destination": "/api/product-page?slug=:slug" },
     { "source": "/product/:slug/", "destination": "/api/product-page?slug=:slug" }
   ],
